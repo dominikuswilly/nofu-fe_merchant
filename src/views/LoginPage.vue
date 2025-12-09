@@ -1,15 +1,15 @@
-<!-- <template>
+<template>
   <div class="login-container">
     <div class="login-card">
       <h1 class="title">🔐 Login</h1>
       <form @submit.prevent="handleLogin" class="login-form">
         <div class="form-group">
-          <label for="email">Email</label>
+          <label for="username">Username</label>
           <input
-            id="email"
-            v-model="form.email"
+            id="username"
+            v-model="form.username"
             type="email"
-            placeholder="Masukkan email"
+            placeholder="Masukkan username"
             required
             class="input-field"
           />
@@ -108,7 +108,7 @@ const handleLogin = async () => {
       }
     } else {
       const errData = await response.json().catch(() => ({}))
-      error.value = errData.message || 'Login gagal: Cek kembali email dan password'
+      error.value = errData.message || 'Login gagal: Cek kembali username dan password'
     }
   } catch (error) {
     console.error('Error saat login:', error)
@@ -212,4 +212,4 @@ label {
 .link:hover {
   text-decoration: underline;
 }
-</style> -->
+</style>
