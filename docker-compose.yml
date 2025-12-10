@@ -1,9 +1,10 @@
 services:
   app:
+    platform: linux/amd64
     build:
       context: .
       dockerfile: Dockerfile
-    image: app.netbird.cloud:8081/fe-customer/stable/1.0.0
+    image: app.netbird.cloud:8081/fe-merchant/stable/1.0.0
     ports:
       - "80:80"
     restart: unless-stopped
