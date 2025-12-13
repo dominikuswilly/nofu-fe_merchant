@@ -60,8 +60,22 @@ const handleLogout = () => {
 }
 
 const handleCheckIn = () => {
-  const time = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
-  alert(`Check-in berhasil pada pukul ${time}`)
+  if ("geolocation" in navigator) {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords
+        const time = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+        alert(`Check-in berhasil pada pukul ${time}\nLokasi: ${latitude}, ${longitude}`)
+      },
+      (error) => {
+        console.error(error)
+        alert('Gagal mengambil lokasi. Pastikan GPS aktif dan izin diberikan.')
+      },
+      { enableHighAccuracy: true }
+    )
+  } else {
+    alert('Browser tidak mendukung pendeteksian lokasi.')
+  }
 }
 </script>
 
