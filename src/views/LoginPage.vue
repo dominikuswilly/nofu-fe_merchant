@@ -33,9 +33,6 @@
         </button>
       </form>
 
-      <p class="info-text">
-        Belum punya akun? <a href="#" class="link">Daftar sekarang</a>
-      </p>
     </div>
   </div>
 </template>
