@@ -5,10 +5,7 @@
     <main class="content-area">
       <div v-if="activeTab === 'transaction'" class="tab-content">
         <h2>Transaksi Baru</h2>
-        <div class="card">
-          <p>Halaman Transaksi akan muncul di sini.</p>
-          <button class="action-btn">Buat Pesanan</button>
-        </div>
+        <MerchantTransaction />
       </div>
 
       <div v-else-if="activeTab === 'product'" class="tab-content">
@@ -42,6 +39,7 @@ import MerchantHeader from '../components/MerchantHeader.vue'
 import MerchantMenu from '../components/MerchantMenu.vue'
 import MerchantHistory from '../components/MerchantHistory.vue'
 import MerchantProduct from '../components/MerchantProduct.vue'
+import MerchantTransaction from '../components/MerchantTransaction.vue'
 
 const router = useRouter()
 const activeTab = ref('transaction')

@@ -1,0 +1,205 @@
+<template>
+  <div class="merchant-transaction">
+    <div class="product-grid">
+      <div 
+        v-for="product in products" 
+        :key="product.id"
+        class="product-card"
+        @click="increment(product)"
+      >
+        <div class="product-image-placeholder" :style="{ backgroundColor: product.color }">
+          <span class="icon">{{ product.icon }}</span>
+          <div v-if="cart[product.id]" class="qty-badge">
+            {{ cart[product.id] }}
+          </div>
+        </div>
+        <div class="product-info">
+          <p class="name">{{ product.name }}</p>
+          <p class="price">{{ formatCurrency(product.price) }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="checkout-bar" v-if="totalItems > 0">
+      <div class="total-info">
+        <p class="label">Total</p>
+        <p class="amount">{{ formatCurrency(totalPrice) }}</p>
+      </div>
+      <button class="checkout-btn" @click="handleCheckout">
+        Checkout ({{ totalItems }})
+      </button>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, computed } from 'vue'
+
+const products = ref([
+  { id: 1, name: 'Kopi Susu Gula Aren', price: 18000, color: '#D6BCFA', icon: '☕' },
+  { id: 2, name: 'Croissant Butter', price: 25000, color: '#F6E05E', icon: '🥐' },
+  { id: 3, name: 'Americano Hot', price: 15000, color: '#FEB2B2', icon: '☕' },
+  { id: 4, name: 'Matcha Latte', price: 22000, color: '#9AE6B4', icon: '🍵' },
+  { id: 5, name: 'Sandwich Tuna', price: 30000, color: '#FBD38D', icon: '🥪' },
+  { id: 6, name: 'Mineral Water', price: 5000, color: '#90CDF4', icon: '💧' },
+  { id: 7, name: 'Donut Coklat', price: 12000, color: '#E9D8FD', icon: '🍩' },
+  { id: 8, name: 'Lemon Tea', price: 10000, color: '#FAF089', icon: '🍋' }
+])
+
+// Cart: { productId: quantity }
+const cart = ref({})
+
+const increment = (product) => {
+  if (cart.value[product.id]) {
+    cart.value[product.id]++
+  } else {
+    cart.value[product.id] = 1
+  }
+}
+
+const totalItems = computed(() => {
+  return Object.values(cart.value).reduce((a, b) => a + b, 0)
+})
+
+const totalPrice = computed(() => {
+  return Object.keys(cart.value).reduce((total, id) => {
+    const product = products.value.find(p => p.id === parseInt(id))
+    return total + (product.price * cart.value[id])
+  }, 0)
+})
+
+const formatCurrency = (value) => {
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0
+  }).format(value)
+}
+
+const handleCheckout = () => {
+  if (confirm('Selesaikan pesanan?')) {
+    alert('Pesanan berhasil dibuat!')
+    cart.value = {}
+  }
+}
+</script>
+
+<style scoped>
+.merchant-transaction {
+  padding-bottom: 80px; /* Space for checkout bar */
+}
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 2 Columns */
+  gap: 16px;
+}
+
+.product-card {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.product-card:active {
+  transform: scale(0.98);
+}
+
+.product-image-placeholder {
+  height: 120px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.icon {
+  font-size: 3em;
+}
+
+.qty-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background-color: #e53e3e;
+  color: white;
+  font-weight: bold;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.9em;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.product-info {
+  padding: 12px;
+}
+
+.name {
+  font-weight: 600;
+  color: #2d3748;
+  margin: 0 0 4px 0;
+  font-size: 0.95em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.price {
+  color: #667eea;
+  font-weight: 700;
+  font-size: 0.9em;
+  margin: 0;
+}
+
+.checkout-bar {
+  position: fixed;
+  bottom: 70px; /* Just above menu bar */
+  left: 20px;
+  right: 20px;
+  max-width: 760px; /* Constrain width max-width of content area minus padding */
+  margin: 0 auto;
+  background-color: #2d3748;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  z-index: 90;
+}
+
+.total-info .label {
+  font-size: 0.75em;
+  margin: 0;
+  color: #cbd5e0;
+}
+
+.total-info .amount {
+  font-size: 1.1em;
+  font-weight: 700;
+  margin: 0;
+}
+
+.checkout-btn {
+  background-color: #48bb78;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.95em;
+}
+
+.checkout-btn:hover {
+  background-color: #38a169;
+}
+</style>
