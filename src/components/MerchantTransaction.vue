@@ -146,9 +146,10 @@ const handleCheckout = () => {
 
 .meta {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 4px;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-top: 6px;
+  gap: 2px;
 }
 
 .stock-info {
