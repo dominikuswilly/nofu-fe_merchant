@@ -88,8 +88,10 @@
           />
         </div>
         <p class="qr-amount">Total: {{ formatCurrency(totalPrice) }}</p>
-        <button class="confirm-btn success" @click="finishTransaction">Transaksi Selesai</button>
-        <button class="confirm-btn cancel" @click="cancelTransaction">Transaksi Batal</button>
+        <div class="action-buttons">
+          <button class="confirm-btn cancel" @click="cancelTransaction">Batalkan</button>
+          <button class="confirm-btn success" @click="finishTransaction">Selesai</button>
+        </div>
       </div>
     </div>
 
@@ -558,6 +560,19 @@ const cancelTransaction = () => {
 
 .confirm-btn.success:hover {
   box-shadow: 0 6px 20px rgba(72, 187, 120, 0.6);
+}
+
+.confirm-btn.cancel {
+  background: white;
+  color: #e53e3e;
+  border: 2px solid #e53e3e;
+  box-shadow: none;
+}
+
+.confirm-btn.cancel:hover {
+  background-color: #fff5f5;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(229, 62, 62, 0.2);
 }
 
 .text-center {
