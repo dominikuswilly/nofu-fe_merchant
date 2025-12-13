@@ -59,11 +59,21 @@ const menuItems = [
 
 .menu-item.active {
   color: #667eea;
+  font-weight: 700;
+  background-color: #eef2ff;
+  border-radius: 12px;
+  padding: 8px 12px;
+  transform: scale(1.05);
+}
+
+.menu-item.active .icon {
+  transform: scale(1.1);
 }
 
 .icon {
   font-size: 1.5em;
   margin-bottom: 4px;
+  transition: transform 0.2s ease;
 }
 
 .label {
