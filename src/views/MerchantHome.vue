@@ -13,10 +13,7 @@
 
       <div v-else-if="activeTab === 'product'" class="tab-content">
         <h2>Daftar Produk</h2>
-        <div class="card">
-          <p>Kelola produk Anda di sini.</p>
-          <button class="action-btn">Tambah Produk</button>
-        </div>
+        <MerchantProduct />
       </div>
 
       <div v-else-if="activeTab === 'history'" class="tab-content">
@@ -44,6 +41,7 @@ import { useRouter } from 'vue-router'
 import MerchantHeader from '../components/MerchantHeader.vue'
 import MerchantMenu from '../components/MerchantMenu.vue'
 import MerchantHistory from '../components/MerchantHistory.vue'
+import MerchantProduct from '../components/MerchantProduct.vue'
 
 const router = useRouter()
 const activeTab = ref('transaction')
