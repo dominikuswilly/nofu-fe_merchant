@@ -35,7 +35,17 @@
       <div class="gps-card">
         <div class="gps-icon">📍</div>
         <h2>Akses Lokasi Diperlukan</h2>
-        <p>{{ gpsMessage }}</p>
+        <p class="gps-main-msg">{{ gpsMessage }}</p>
+        
+        <div v-if="gpsError" class="gps-guide">
+          <h3>Cara Mengaktifkan GPS:</h3>
+          <ol>
+            <li><strong>Chrome/Browser:</strong> Klik ikon kunci/info di address bar → Izinkan Lokasi</li>
+            <li><strong>Pengaturan HP:</strong> Pengaturan → Lokasi → Aktifkan</li>
+            <li>Setelah aktif, klik "Coba Lagi" di bawah</li>
+          </ol>
+        </div>
+        
         <button v-if="gpsError" class="retry-btn" @click="checkGPS">Coba Lagi</button>
       </div>
     </div>
@@ -197,6 +207,37 @@ onMounted(() => {
   margin-bottom: 16px;
 }
 
+.gps-main-msg {
+  color: #4a5568;
+  margin-bottom: 20px;
+}
+
+.gps-guide {
+  background-color: #f7fafc;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 20px 0;
+  text-align: left;
+}
+
+.gps-guide h3 {
+  margin-top: 0;
+  font-size: 1em;
+  color: #2d3748;
+}
+
+.gps-guide ol {
+  margin: 10px 0;
+  padding-left: 20px;
+}
+
+.gps-guide li {
+  margin: 8px 0;
+  color: #4a5568;
+  font-size: 0.9em;
+  line-height: 1.5;
+}
+
 .retry-btn {
   margin-top: 20px;
   background-color: #667eea;
@@ -205,5 +246,10 @@ onMounted(() => {
   padding: 10px 20px;
   border-radius: 8px;
   cursor: pointer;
+  font-weight: 600;
+}
+
+.retry-btn:hover {
+  background-color: #5a67d8;
 }
 </style>
