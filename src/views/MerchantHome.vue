@@ -31,7 +31,7 @@
     <MerchantMenu v-model="activeTab" />
 
     <!-- GPS Guard Overlay -->
-    <div v-if="!gpsAllowed" class="gps-guard-overlay">
+    <div v-if="gpsRequired && !gpsAllowed" class="gps-guard-overlay">
       <div class="gps-card">
         <div class="gps-icon">📍</div>
         <h2>Akses Lokasi Diperlukan</h2>
@@ -99,11 +99,20 @@ const handleCheckIn = () => {
 }
 
 // GPS Guard Logic
+// Check if GPS is required based on environment
+const gpsRequired = process.env.NODE_ENV === 'production'
+
 const gpsAllowed = ref(false)
 const gpsMessage = ref('Memeriksa izin lokasi...')
 const gpsError = ref(false)
 
 const checkGPS = () => {
+  if (!gpsRequired) {
+    // Skip GPS check in development
+    gpsAllowed.value = true
+    return
+  }
+  
   gpsError.value = false
   gpsMessage.value = 'Memeriksa izin lokasi...'
   
