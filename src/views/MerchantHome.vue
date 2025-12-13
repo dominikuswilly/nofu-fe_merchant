@@ -18,6 +18,11 @@
         <MerchantHistory />
       </div>
 
+      <div v-else-if="activeTab === 'defective'" class="tab-content">
+        <h2>Produk Rusak</h2>
+        <MerchantDefective />
+      </div>
+
       <div v-else-if="activeTab === 'balance'" class="tab-content">
         <h2>Saldo Merchant</h2>
         <div class="card balance-card">
@@ -60,6 +65,7 @@ import MerchantMenu from '../components/MerchantMenu.vue'
 import MerchantHistory from '../components/MerchantHistory.vue'
 import MerchantProduct from '../components/MerchantProduct.vue'
 import MerchantTransaction from '../components/MerchantTransaction.vue'
+import MerchantDefective from '../components/MerchantDefective.vue'
 
 const router = useRouter()
 // Load saved tab from localStorage or default to 'transaction'

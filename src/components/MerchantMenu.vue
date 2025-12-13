@@ -29,6 +29,7 @@ const menuItems = [
   { id: 'transaction', label: 'Transaksi', icon: '💳' },
   { id: 'product', label: 'Produk', icon: '📦' },
   { id: 'history', label: 'Riwayat', icon: '🕒' },
+  { id: 'defective', label: 'Rusak', icon: '⚠️' },
   { id: 'balance', label: 'Saldo', icon: '💰' }
 ]
 </script>
