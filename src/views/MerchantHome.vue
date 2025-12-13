@@ -41,11 +41,35 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import MerchantHeader from '../components/MerchantHeader.vue'
 import MerchantMenu from '../components/MerchantMenu.vue'
 
+const router = useRouter()
 const activeTab = ref('transaction')
+
+watch(activeTab, (newTab) => {
+  if (newTab === 'logout') {
+    const confirmLogout = confirm('Apakah Anda yakin ingin keluar?')
+    if (confirmLogout) {
+      // Clear auth data
+      localStorage.removeItem('auth_token')
+      localStorage.removeItem('merchant')
+      
+      // Compute correct route for login
+      router.replace({ name: 'LoginPage' }).catch(() => {
+        // Fallback if name not found
+        router.replace('/')
+      })
+    } else {
+      // Revert to transaction if cancelled
+      // Use nextTick or simple timeout might be needed if update is immediate, 
+      // but simple assignment usually works in Vue 3 for this case if not controlled strictly.
+      activeTab.value = 'transaction' 
+    }
+  }
+})
 </script>
 
 <style scoped>
