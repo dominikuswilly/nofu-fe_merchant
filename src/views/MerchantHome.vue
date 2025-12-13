@@ -29,11 +29,21 @@
     </main>
 
     <MerchantMenu v-model="activeTab" />
+
+    <!-- GPS Guard Overlay -->
+    <div v-if="!gpsAllowed" class="gps-guard-overlay">
+      <div class="gps-card">
+        <div class="gps-icon">📍</div>
+        <h2>Akses Lokasi Diperlukan</h2>
+        <p>{{ gpsMessage }}</p>
+        <button v-if="gpsError" class="retry-btn" @click="checkGPS">Coba Lagi</button>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import MerchantHeader from '../components/MerchantHeader.vue'
 import MerchantMenu from '../components/MerchantMenu.vue'
@@ -59,8 +69,10 @@ const handleLogout = () => {
   }
 }
 
+
 const handleCheckIn = () => {
-  if ("geolocation" in navigator) {
+  if (gpsAllowed.value) {
+    // If we are here, GPS permission is likely granted, but double check logic
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords
@@ -69,14 +81,43 @@ const handleCheckIn = () => {
       },
       (error) => {
         console.error(error)
-        alert('Gagal mengambil lokasi. Pastikan GPS aktif dan izin diberikan.')
+        alert('Gagal mengambil lokasi saat ini.')
       },
       { enableHighAccuracy: true }
     )
-  } else {
-    alert('Browser tidak mendukung pendeteksian lokasi.')
   }
 }
+
+// GPS Guard Logic
+const gpsAllowed = ref(false)
+const gpsMessage = ref('Memeriksa izin lokasi...')
+const gpsError = ref(false)
+
+const checkGPS = () => {
+  gpsError.value = false
+  gpsMessage.value = 'Memeriksa izin lokasi...'
+  
+  if (!("geolocation" in navigator)) {
+    gpsMessage.value = "Browser ini tidak mendukung Geolocation."
+    gpsError.value = true
+    return
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    () => {
+      gpsAllowed.value = true
+    },
+    (error) => {
+      console.error(error)
+      gpsError.value = true
+      gpsMessage.value = "Aplikasi ini memerlukan akses lokasi. Mohon aktifkan GPS."
+    }
+  )
+}
+
+onMounted(() => {
+  checkGPS()
+})
 </script>
 
 <style scoped>
@@ -130,5 +171,39 @@ const handleCheckIn = () => {
   font-size: 2em;
   color: #2d3748;
   margin: 10px 0;
+}
+
+.gps-guard-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255,255,255,1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.gps-card {
+  text-align: center;
+  padding: 30px;
+  max-width: 300px;
+}
+
+.gps-icon {
+  font-size: 3em;
+  margin-bottom: 16px;
+}
+
+.retry-btn {
+  margin-top: 20px;
+  background-color: #667eea;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
 }
 </style>

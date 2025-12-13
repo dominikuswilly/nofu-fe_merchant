@@ -39,11 +39,21 @@
       :message="toastMessage" 
       :type="toastType" 
     />
+
+    <!-- GPS Guard Overlay -->
+    <div v-if="!gpsAllowed" class="gps-guard-overlay">
+      <div class="gps-card">
+        <div class="gps-icon">📍</div>
+        <h2>Akses Lokasi Diperlukan</h2>
+        <p>{{ gpsMessage }}</p>
+        <button v-if="gpsError" class="retry-btn" @click="checkGPS">Coba Lagi</button>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { sha512 } from 'js-sha512'
 import ToastNotification from '../components/ToastNotification.vue'
@@ -135,6 +145,37 @@ const handleLogin = async () => {
     loading.value = false
   }
 }
+
+// GPS Guard Logic
+const gpsAllowed = ref(false)
+const gpsMessage = ref('Memeriksa izin lokasi...')
+const gpsError = ref(false)
+
+const checkGPS = () => {
+  gpsError.value = false
+  gpsMessage.value = 'Memeriksa izin lokasi...'
+  
+  if (!("geolocation" in navigator)) {
+    gpsMessage.value = "Browser ini tidak mendukung Geolocation."
+    gpsError.value = true
+    return
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    () => {
+      gpsAllowed.value = true
+    },
+    (error) => {
+      console.error(error)
+      gpsError.value = true
+      gpsMessage.value = "Mohon aktifkan GPS dan izinkan akses lokasi untuk melanjutkan."
+    }
+  )
+}
+
+onMounted(() => {
+  checkGPS()
+})
 </script>
 
 <style scoped>
@@ -233,5 +274,42 @@ label {
 
 .link:hover {
   text-decoration: underline;
+}
+
+.gps-guard-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255,255,255,0.95);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.gps-card {
+  text-align: center;
+  padding: 30px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  max-width: 300px;
+}
+
+.gps-icon {
+  font-size: 3em;
+  margin-bottom: 16px;
+}
+
+.retry-btn {
+  margin-top: 20px;
+  background-color: #667eea;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
 }
 </style>
