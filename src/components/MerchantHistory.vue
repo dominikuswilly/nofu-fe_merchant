@@ -6,7 +6,7 @@
         :key="filter.value"
         class="filter-btn"
         :class="{ active: currentFilter === filter.value }"
-        @click="currentFilter = filter.value"
+        @click="switchFilter(filter.value)"
       >
         {{ filter.label }}
       </button>
@@ -17,18 +17,35 @@
         <thead>
           <tr>
             <th>Nama Produk</th>
-            <th>Total Kuantitas</th>
-            <th v-if="currentFilter === 'today'">Waktu Transaksi</th>
+            <th class="text-right">Total Kuantitas</th>
+            <th v-if="currentFilter === 'today'" style="width: 40px"></th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="item in filteredData" :key="item.id">
-            <td>{{ item.productName }}</td>
-            <td class="text-center">{{ item.totalQty }}</td>
-            <td v-if="currentFilter === 'today'">
-              <span class="times">{{ item.times.join(', ') }}</span>
-            </td>
-          </tr>
+          <template v-for="item in filteredData" :key="item.id">
+            <tr 
+              :class="{ 'expanded': isExpanded(item.id), 'clickable': currentFilter === 'today' }"
+              @click="toggleExpand(item.id)"
+            >
+              <td>{{ item.productName }}</td>
+              <td class="text-right">{{ item.totalQty }}</td>
+              <td v-if="currentFilter === 'today'" class="text-center">
+                <span class="chevron" :class="{ rotate: isExpanded(item.id) }">▼</span>
+              </td>
+            </tr>
+            <tr v-if="currentFilter === 'today' && isExpanded(item.id)" class="details-row">
+              <td colspan="3">
+                <div class="details-content">
+                  <p class="details-title">Waktu Transaksi:</p>
+                  <div class="tags">
+                    <span v-for="(time, index) in item.times" :key="index" class="tag">
+                      {{ time }}
+                    </span>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </template>
           <tr v-if="filteredData.length === 0">
             <td :colspan="currentFilter === 'today' ? 3 : 2" class="empty-state">
               Tidak ada data penjualan.
@@ -44,6 +61,7 @@
 import { ref, computed } from 'vue'
 
 const currentFilter = ref('today')
+const expandedIds = ref(new Set())
 
 const filters = [
   { label: 'Hari Ini', value: 'today' },
@@ -76,6 +94,23 @@ const mockData = {
 const filteredData = computed(() => {
   return mockData[currentFilter.value] || []
 })
+
+const switchFilter = (val) => {
+  currentFilter.value = val
+  expandedIds.value.clear()
+}
+
+const toggleExpand = (id) => {
+  if (currentFilter.value !== 'today') return
+  
+  if (expandedIds.value.has(id)) {
+    expandedIds.value.delete(id)
+  } else {
+    expandedIds.value.add(id)
+  }
+}
+
+const isExpanded = (id) => expandedIds.value.has(id)
 </script>
 
 <style scoped>
@@ -138,13 +173,63 @@ const filteredData = computed(() => {
   font-size: 0.95em;
 }
 
+.text-right {
+  text-align: right;
+}
+
 .text-center {
   text-align: center;
 }
 
-.times {
+.clickable {
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.clickable:hover {
+  background-color: #f7fafc;
+}
+
+.chevron {
+  display: inline-block;
+  font-size: 0.8em;
+  transition: transform 0.3s;
+  color: #a0aec0;
+}
+
+.chevron.rotate {
+  transform: rotate(180deg);
+}
+
+.details-row td {
+  background-color: #f8fafc;
+  border-bottom: 2px solid #edf2f7;
+  padding: 0;
+}
+
+.details-content {
+  padding: 16px;
+}
+
+.details-title {
+  margin: 0 0 8px 0;
   font-size: 0.85em;
+  font-weight: 600;
   color: #718096;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag {
+  background-color: #e2e8f0;
+  color: #4a5568;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.85em;
 }
 
 .empty-state {
