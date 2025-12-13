@@ -62,7 +62,16 @@
             <span>Total Bayar</span>
             <span class="total-amount">{{ formatCurrency(totalPrice) }}</span>
           </div>
-          <button class="confirm-btn" @click="proceedToPayment">Bayar</button>
+          <div class="action-buttons">
+            <button class="discard-btn" @click="cancelCheckout">
+              <span class="btn-icon">🗑️</span>
+              Batalkan Pesanan
+            </button>
+            <button class="confirm-btn" @click="proceedToPayment">
+              <span class="btn-icon">💰</span>
+              Bayar Sekarang
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -80,13 +89,31 @@
         </div>
         <p class="qr-amount">Total: {{ formatCurrency(totalPrice) }}</p>
         <button class="confirm-btn success" @click="finishTransaction">Transaksi Selesai</button>
+        <button class="confirm-btn cancel" @click="cancelTransaction">Transaksi Batal</button>
+      </div>
+    </div>
+
+    <!-- Cancel Confirmation Modal -->
+    <div v-if="showCancelConfirm" class="modal-overlay confirmation-overlay">
+      <div class="modal-content confirmation-modal">
+        <div class="warning-icon">⚠️</div>
+        <h3>Batalkan Pesanan?</h3>
+        <p class="confirmation-message">
+          Apakah Anda yakin ingin membatalkan pesanan? Semua produk yang dipilih akan dihapus dan Anda harus memilih ulang.
+        </p>
+        <div class="confirmation-actions">
+          <button class="discard-btn" @click="confirmCancelOrder">
+            <span class="btn-icon">🗑️</span>
+            Batalkan Pesanan
+          </button>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, nextTick } from 'vue'
 
 const products = ref([
   { id: 1, name: 'Kopi Susu Gula Aren', price: 18000, color: '#D6BCFA', icon: '☕', stock: 120 },
@@ -103,6 +130,8 @@ const products = ref([
 const cart = ref({})
 const showSummary = ref(false)
 const showQR = ref(false)
+const showCancelConfirm = ref(false)
+const summaryRef = ref(null)
 
 const increment = (product) => {
   const currentQty = cart.value[product.id] || 0
@@ -156,8 +185,22 @@ const formatCurrency = (value) => {
   }).format(value)
 }
 
-const handleCheckout = () => {
+const handleCheckout = async () => {
   showSummary.value = true
+  
+  // Auto-scroll to summary modal after it's rendered
+  await nextTick()
+  if (summaryRef.value) {
+    summaryRef.value.scrollIntoView({ 
+      behavior: 'smooth', 
+      block: 'center' 
+    })
+  }
+}
+
+const cancelCheckout = () => {
+  // Show confirmation modal instead of directly canceling
+  showSummary.value = false
 }
 
 const proceedToPayment = () => {
@@ -168,7 +211,13 @@ const proceedToPayment = () => {
 const finishTransaction = () => {
   showQR.value = false
   cart.value = {}
-  alert('Transaksi Berhasil!')
+  alert('Transaksi sudah disimpan')
+}
+
+const cancelTransaction = () => {
+  showQR.value = false
+  cart.value = {}
+  alert('Transaksi sudah dibatalkan')
 }
 </script>
 
@@ -713,5 +762,108 @@ const finishTransaction = () => {
   background-color: #718096;
   cursor: not-allowed;
   opacity: 0.6;
+}
+
+/* Confirmation Modal Styles */
+.confirmation-overlay {
+  z-index: 300;
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+.confirmation-modal {
+  max-width: 360px;
+  text-align: center;
+}
+
+.warning-icon {
+  font-size: 4em;
+  margin-bottom: 16px;
+  animation: warningPulse 1.5s infinite;
+}
+
+@keyframes warningPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+.confirmation-modal h3 {
+  color: #c53030;
+  margin-bottom: 16px;
+  font-size: 1.4em;
+}
+
+.confirmation-message {
+  color: #4a5568;
+  line-height: 1.6;
+  margin-bottom: 24px;
+  font-size: 0.95em;
+}
+
+.confirmation-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.keep-shopping-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 14px 16px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 1em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.keep-shopping-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+.keep-shopping-btn:active {
+  transform: translateY(0);
+}
+
+.discard-btn {
+  width: 100%;
+  background-color: transparent;
+  color: #e53e3e;
+  border: 2px solid #fc8181;
+  padding: 14px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.95em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.discard-btn:hover {
+  background-color: #fff5f5;
+  border-color: #e53e3e;
+  color: #c53030;
+  transform: translateY(-2px);
+}
+
+.discard-btn:active {
+  transform: translateY(0);
+  background-color: #fed7d7;
 }
 </style>
