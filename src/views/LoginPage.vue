@@ -34,6 +34,11 @@
       </form>
 
     </div>
+    <ToastNotification 
+      v-model="showToast" 
+      :message="toastMessage" 
+      :type="toastType" 
+    />
   </div>
 </template>
 
@@ -41,6 +46,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { sha512 } from 'js-sha512'
+import ToastNotification from '../components/ToastNotification.vue'
 
 const router = useRouter()
 
@@ -54,13 +60,24 @@ const form = ref({
 const loading = ref(false)
 const error = ref(null)
 
+// Toast State
+const showToast = ref(false)
+const toastMessage = ref('')
+const toastType = ref('info')
+
+const triggerToast = (message, type = 'info') => {
+  toastMessage.value = message
+  toastType.value = type
+  showToast.value = true
+}
+
 // Fungsi handleLogin
 const handleLogin = async () => {
   error.value = null
 
   // Validasi dasar
   if (!form.value.username || !form.value.password) {
-    alert('Harap isi semua field!')
+    triggerToast('Harap isi semua field!', 'error')
     return
   }
 
@@ -93,23 +110,26 @@ const handleLogin = async () => {
       if (data.merchant) localStorage.setItem('merchant', JSON.stringify(data.merchant))
 
       // Notify user (optional)
-      // alert(`Login berhasil! Selamat datang, ${data.name || 'Merchant'}`)
+      triggerToast(`Login berhasil! Selamat datang, ${data.name || 'Merchant'}`, 'success')
 
       // Navigate to merchant page. Prefer route name for clarity — see router setup below.
-      if (merchantId) {
-        // replace so user can't go back to login easily
-        router.replace({ name: 'MerchantHome', params: { id: merchantId } })
-      } else {
-        // fallback route if backend doesn't return id
-        router.replace({ path: '/merchants' })
-      }
+      setTimeout(() => {
+        if (merchantId) {
+          // replace so user can't go back to login easily
+          router.replace({ name: 'MerchantHome', params: { id: merchantId } })
+        } else {
+          // fallback route if backend doesn't return id
+          router.replace({ path: '/merchants' })
+        }
+      }, 1000) // Delay slightly to show success toast
     } else {
       const errData = await response.json().catch(() => ({}))
-      error.value = errData.message || 'Login gagal: Cek kembali username dan password'
+      const errorMsg = errData.message || 'Login gagal: Cek kembali username dan password'
+      triggerToast(errorMsg, 'error')
     }
   } catch (error) {
     console.error('Error saat login:', error)
-    alert('Kesalahan jaringan: Tidak bisa terhubung ke server. Pastikan API berjalan di app.netbird.cloud:8080.')
+    triggerToast('Kesalahan jaringan: Tidak bisa terhubung ke server.', 'error')
   } finally {
     // Hentikan loading
     loading.value = false
