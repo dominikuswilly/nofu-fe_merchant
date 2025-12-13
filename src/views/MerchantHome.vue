@@ -1,8 +1,103 @@
 <template>
-    <div>
-        <h1>Merchant Home</h1>
-        <p>Welcome to the Merchant Home Page!</p>
-    </div>
+  <div class="merchant-home">
+    <MerchantHeader />
+    
+    <main class="content-area">
+      <div v-if="activeTab === 'transaction'" class="tab-content">
+        <h2>Transaksi Baru</h2>
+        <div class="card">
+          <p>Halaman Transaksi akan muncul di sini.</p>
+          <button class="action-btn">Buat Pesanan</button>
+        </div>
+      </div>
+
+      <div v-else-if="activeTab === 'product'" class="tab-content">
+        <h2>Daftar Produk</h2>
+        <div class="card">
+          <p>Kelola produk Anda di sini.</p>
+          <button class="action-btn">Tambah Produk</button>
+        </div>
+      </div>
+
+      <div v-else-if="activeTab === 'history'" class="tab-content">
+        <h2>Riwayat Transaksi</h2>
+        <div class="card">
+          <p>Belum ada riwayat transaksi.</p>
+        </div>
+      </div>
+
+      <div v-else-if="activeTab === 'balance'" class="tab-content">
+        <h2>Saldo Merchant</h2>
+        <div class="card balance-card">
+          <h3>Rp 0</h3>
+          <p>Saldo Tersedia</p>
+          <button class="action-btn outline">Tarik Dana</button>
+        </div>
+      </div>
+    </main>
+
+    <MerchantMenu v-model="activeTab" />
+  </div>
 </template>
 
-<script setup></script>
+<script setup>
+import { ref } from 'vue'
+import MerchantHeader from '../components/MerchantHeader.vue'
+import MerchantMenu from '../components/MerchantMenu.vue'
+
+const activeTab = ref('transaction')
+</script>
+
+<style scoped>
+.merchant-home {
+  min-height: 100vh;
+  background-color: #f7fafc;
+  padding-bottom: 80px; /* Space for bottom menu */
+}
+
+.content-area {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.tab-content h2 {
+  color: #2d3748;
+  margin-bottom: 20px;
+}
+
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  margin-bottom: 16px;
+}
+
+.action-btn {
+  background-color: #667eea;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.action-btn.outline {
+  background-color: transparent;
+  border: 2px solid #667eea;
+  color: #667eea;
+}
+
+.balance-card {
+  text-align: center;
+}
+
+.balance-card h3 {
+  font-size: 2em;
+  color: #2d3748;
+  margin: 10px 0;
+}
+</style>
