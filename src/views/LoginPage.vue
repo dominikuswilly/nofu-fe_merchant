@@ -143,8 +143,13 @@ const handleLogin = async () => {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
+  /* Fallback for browsers that don't support dvh */
+  min-height: 100dvh;
+  padding: 20px;
+  box-sizing: border-box;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  overflow-y: auto;
 }
 
 .login-card {
