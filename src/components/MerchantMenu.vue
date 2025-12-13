@@ -30,6 +30,7 @@ const menuItems = [
   { id: 'product', label: 'Produk', icon: '📦' },
   { id: 'history', label: 'Riwayat', icon: '🕒' },
   { id: 'defective', label: 'Rusak', icon: '⚠️' },
+  { id: 'restock', label: 'Restock', icon: '📥' },
   { id: 'balance', label: 'Saldo', icon: '💰' }
 ]
 </script>
