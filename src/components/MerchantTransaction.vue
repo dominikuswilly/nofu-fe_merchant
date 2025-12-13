@@ -9,8 +9,13 @@
       >
         <div class="product-image-placeholder" :style="{ backgroundColor: product.color }">
           <span class="icon">{{ product.icon }}</span>
-          <div v-if="cart[product.id]" class="qty-badge">
-            {{ cart[product.id] }}
+          <div v-if="cart[product.id]" class="qty-controls" @click.stop>
+            <button class="control-btn minus" @click="decrement(product)">-</button>
+            <span class="qty">{{ cart[product.id] }}</span>
+            <button class="control-btn plus" @click="increment(product)">+</button>
+          </div>
+          <div v-else class="add-hint">
+            <span class="plus-icon">+</span>
           </div>
         </div>
         <div class="product-info">
@@ -54,6 +59,15 @@ const increment = (product) => {
     cart.value[product.id]++
   } else {
     cart.value[product.id] = 1
+  }
+}
+
+const decrement = (product) => {
+  if (cart.value[product.id]) {
+    cart.value[product.id]--
+    if (cart.value[product.id] === 0) {
+      delete cart.value[product.id]
+    }
   }
 }
 
@@ -120,21 +134,71 @@ const handleCheckout = () => {
   font-size: 3em;
 }
 
-.qty-badge {
+.qty-controls {
   position: absolute;
-  top: 8px;
-  right: 8px;
-  background-color: #e53e3e;
-  color: white;
-  font-weight: bold;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: rgba(255, 255, 255, 0.9);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 12px;
+  backdrop-filter: blur(4px);
+}
+
+.control-btn {
   width: 28px;
   height: 28px;
+  border-radius: 50%;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.2em;
+  transition: background 0.2s;
+}
+
+.control-btn.minus {
+  background-color: #feb2b2;
+  color: #c53030;
+}
+
+.control-btn.plus {
+  background-color: #9ae6b4;
+  color: #22543d;
+}
+
+.control-btn:active {
+  transform: scale(0.9);
+}
+
+.qty {
+  font-weight: 700;
+  color: #2d3748;
+  font-size: 1.1em;
+}
+
+.add-hint {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background-color: rgba(255, 255, 255, 0.8);
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 0.9em;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.plus-icon {
+  font-size: 1.5em;
+  color: #4a5568;
+  font-weight: light;
 }
 
 .product-info {
