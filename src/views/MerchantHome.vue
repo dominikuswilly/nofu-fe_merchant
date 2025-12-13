@@ -53,7 +53,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import MerchantHeader from '../components/MerchantHeader.vue'
 import MerchantMenu from '../components/MerchantMenu.vue'
@@ -62,7 +62,13 @@ import MerchantProduct from '../components/MerchantProduct.vue'
 import MerchantTransaction from '../components/MerchantTransaction.vue'
 
 const router = useRouter()
-const activeTab = ref('transaction')
+// Load saved tab from localStorage or default to 'transaction'
+const activeTab = ref(localStorage.getItem('activeTab') || 'transaction')
+
+// Watch for tab changes and save to localStorage
+watch(activeTab, (newTab) => {
+  localStorage.setItem('activeTab', newTab)
+})
 
 const handleLogout = () => {
   const confirmLogout = confirm('Apakah Anda yakin ingin keluar?')
