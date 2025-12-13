@@ -12,6 +12,9 @@
               <p class="username">@{{ merchant.username || 'username' }}</p>
             </div>
             <div class="divider"></div>
+            <div class="menu-item" @click="$emit('checkIn')">
+              📍 Check-in
+            </div>
             <div class="menu-item logout" @click="$emit('logout')">
               🚪 Keluar
             </div>
@@ -25,7 +28,7 @@
 <script setup>
 import { ref, defineEmits, onMounted } from 'vue'
 
-defineEmits(['logout'])
+defineEmits(['logout', 'checkIn'])
 
 const showMenu = ref(false)
 const merchant = ref({})

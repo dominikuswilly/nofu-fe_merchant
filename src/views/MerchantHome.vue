@@ -1,6 +1,6 @@
 <template>
   <div class="merchant-home">
-    <MerchantHeader @logout="handleLogout" />
+    <MerchantHeader @logout="handleLogout" @checkIn="handleCheckIn" />
     
     <main class="content-area">
       <div v-if="activeTab === 'transaction'" class="tab-content">
@@ -57,6 +57,11 @@ const handleLogout = () => {
       router.replace('/')
     })
   }
+}
+
+const handleCheckIn = () => {
+  const time = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+  alert(`Check-in berhasil pada pukul ${time}`)
 }
 </script>
 
