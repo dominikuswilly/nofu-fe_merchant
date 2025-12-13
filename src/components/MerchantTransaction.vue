@@ -449,7 +449,7 @@ const finishTransaction = () => {
 
 .checkout-bar {
   position: fixed;
-  bottom: 70px; /* Just above menu bar */
+  bottom: 85px; /* Increased spacing to avoid menu collision */
   left: 20px;
   right: 20px;
   max-width: 760px; /* Constrain width max-width of content area minus padding */
