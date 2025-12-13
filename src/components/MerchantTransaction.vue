@@ -62,8 +62,24 @@
             <span>Total Bayar</span>
             <span class="total-amount">{{ formatCurrency(totalPrice) }}</span>
           </div>
-          <button class="confirm-btn" @click="confirmOrder">Selesai</button>
+          <button class="confirm-btn" @click="proceedToPayment">Bayar</button>
         </div>
+      </div>
+    </div>
+
+    <!-- QR Modal -->
+    <div v-if="showQR" class="modal-overlay">
+      <div class="modal-content text-center">
+        <h3>Scan untuk Membayar</h3>
+        <div class="qr-container">
+          <img 
+            :src="`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=Payment:${totalPrice}`" 
+            alt="QR Code" 
+            class="qr-image"
+          />
+        </div>
+        <p class="qr-amount">Total: {{ formatCurrency(totalPrice) }}</p>
+        <button class="confirm-btn success" @click="finishTransaction">Transaksi Selesai</button>
       </div>
     </div>
   </div>
@@ -86,6 +102,7 @@ const products = ref([
 // Cart: { productId: quantity }
 const cart = ref({})
 const showSummary = ref(false)
+const showQR = ref(false)
 
 const increment = (product) => {
   const currentQty = cart.value[product.id] || 0
@@ -143,10 +160,15 @@ const handleCheckout = () => {
   showSummary.value = true
 }
 
-const confirmOrder = () => {
-  alert('Pesanan berhasil dibuat!')
-  cart.value = {}
+const proceedToPayment = () => {
   showSummary.value = false
+  showQR.value = true
+}
+
+const finishTransaction = () => {
+  showQR.value = false
+  cart.value = {}
+  alert('Transaksi Berhasil!')
 }
 </script>
 
@@ -271,6 +293,36 @@ const confirmOrder = () => {
 
 .confirm-btn:hover {
   background-color: #5a67d8;
+}
+
+.confirm-btn.success {
+  background-color: #48bb78;
+}
+
+.confirm-btn.success:hover {
+  background-color: #38a169;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.qr-container {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.qr-image {
+  border: 4px solid #cbd5e0;
+  border-radius: 12px;
+}
+
+.qr-amount {
+  font-weight: 700;
+  font-size: 1.25em;
+  color: #2d3748;
+  margin-bottom: 24px;
 }
 
 .meta {
