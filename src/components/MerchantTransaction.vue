@@ -44,6 +44,28 @@
         Checkout ({{ totalItems }})
       </button>
     </div>
+
+    <div v-if="showSummary" class="modal-overlay">
+      <div class="modal-content">
+        <h3>Ringkasan Pesanan</h3>
+        <div class="summary-list">
+          <div v-for="item in cartItems" :key="item.id" class="summary-item">
+            <div class="item-info">
+              <span class="item-name">{{ item.name }}</span>
+              <span class="item-qty">x{{ item.qty }}</span>
+            </div>
+            <span class="item-price">{{ formatCurrency(item.subtotal) }}</span>
+          </div>
+        </div>
+        <div class="summary-footer">
+          <div class="summary-total">
+            <span>Total Bayar</span>
+            <span class="total-amount">{{ formatCurrency(totalPrice) }}</span>
+          </div>
+          <button class="confirm-btn" @click="confirmOrder">Selesai</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -63,6 +85,7 @@ const products = ref([
 
 // Cart: { productId: quantity }
 const cart = ref({})
+const showSummary = ref(false)
 
 const increment = (product) => {
   const currentQty = cart.value[product.id] || 0
@@ -90,6 +113,17 @@ const totalItems = computed(() => {
   return Object.values(cart.value).reduce((a, b) => a + b, 0)
 })
 
+const cartItems = computed(() => {
+  return Object.keys(cart.value).map(id => {
+    const product = products.value.find(p => p.id === parseInt(id))
+    return {
+      ...product,
+      qty: cart.value[id],
+      subtotal: product.price * cart.value[id]
+    }
+  })
+})
+
 const totalPrice = computed(() => {
   return Object.keys(cart.value).reduce((total, id) => {
     const product = products.value.find(p => p.id === parseInt(id))
@@ -106,10 +140,13 @@ const formatCurrency = (value) => {
 }
 
 const handleCheckout = () => {
-  if (confirm('Selesaikan pesanan?')) {
-    alert('Pesanan berhasil dibuat!')
-    cart.value = {}
-  }
+  showSummary.value = true
+}
+
+const confirmOrder = () => {
+  alert('Pesanan berhasil dibuat!')
+  cart.value = {}
+  showSummary.value = false
 }
 </script>
 
@@ -142,6 +179,98 @@ const handleCheckout = () => {
   background-color: #cbd5e0 !important;
   color: #a0aec0 !important;
   cursor: not-allowed;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+  padding: 20px;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 400px;
+  padding: 24px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+.modal-content h3 {
+  margin-top: 0;
+  color: #2d3748;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.summary-list {
+  max-height: 300px;
+  overflow-y: auto;
+  margin-bottom: 20px;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  font-size: 0.95em;
+  color: #4a5568;
+}
+
+.item-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.item-name {
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.item-qty {
+  font-size: 0.85em;
+  color: #718096;
+}
+
+.summary-footer {
+  border-top: 1px solid #e2e8f0;
+  padding-top: 16px;
+}
+
+.summary-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  font-weight: 700;
+  font-size: 1.1em;
+  color: #2d3748;
+}
+
+.confirm-btn {
+  width: 100%;
+  background-color: #667eea;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 1em;
+}
+
+.confirm-btn:hover {
+  background-color: #5a67d8;
 }
 
 .meta {
