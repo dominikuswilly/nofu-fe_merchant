@@ -5,6 +5,7 @@
         v-for="product in products" 
         :key="product.id"
         class="product-card"
+        :class="{ 'low-stock-limit': product.stock < 50 }"
         @click="increment(product)"
       >
         <div class="product-image-placeholder" :style="{ backgroundColor: product.color }">
@@ -12,7 +13,11 @@
           <div v-if="cart[product.id]" class="qty-controls" @click.stop>
             <button class="control-btn minus" @click="decrement(product)">-</button>
             <span class="qty">{{ cart[product.id] }}</span>
-            <button class="control-btn plus" @click="increment(product)">+</button>
+            <button 
+              class="control-btn plus" 
+              @click="increment(product)"
+              :disabled="cart[product.id] >= product.stock"
+            >+</button>
           </div>
           <div v-else class="add-hint">
             <span class="plus-icon">+</span>
@@ -20,7 +25,12 @@
         </div>
         <div class="product-info">
           <p class="name">{{ product.name }}</p>
-          <p class="price">{{ formatCurrency(product.price) }}</p>
+          <div class="meta">
+            <p class="price">{{ formatCurrency(product.price) }}</p>
+            <span class="stock-info" :class="{ 'low-stock': product.stock < 50 }">
+              Stok: {{ product.stock }}
+            </span>
+          </div>
         </div>
       </div>
     </div>
@@ -41,24 +51,29 @@
 import { ref, computed } from 'vue'
 
 const products = ref([
-  { id: 1, name: 'Kopi Susu Gula Aren', price: 18000, color: '#D6BCFA', icon: '☕' },
-  { id: 2, name: 'Croissant Butter', price: 25000, color: '#F6E05E', icon: '🥐' },
-  { id: 3, name: 'Americano Hot', price: 15000, color: '#FEB2B2', icon: '☕' },
-  { id: 4, name: 'Matcha Latte', price: 22000, color: '#9AE6B4', icon: '🍵' },
-  { id: 5, name: 'Sandwich Tuna', price: 30000, color: '#FBD38D', icon: '🥪' },
-  { id: 6, name: 'Mineral Water', price: 5000, color: '#90CDF4', icon: '💧' },
-  { id: 7, name: 'Donut Coklat', price: 12000, color: '#E9D8FD', icon: '🍩' },
-  { id: 8, name: 'Lemon Tea', price: 10000, color: '#FAF089', icon: '🍋' }
+  { id: 1, name: 'Kopi Susu Gula Aren', price: 18000, color: '#D6BCFA', icon: '☕', stock: 120 },
+  { id: 2, name: 'Croissant Butter', price: 25000, color: '#F6E05E', icon: '🥐', stock: 30 },
+  { id: 3, name: 'Americano Hot', price: 15000, color: '#FEB2B2', icon: '☕', stock: 8 },
+  { id: 4, name: 'Matcha Latte', price: 22000, color: '#9AE6B4', icon: '🍵', stock: 75 },
+  { id: 5, name: 'Sandwich Tuna', price: 30000, color: '#FBD38D', icon: '🥪', stock: 45 },
+  { id: 6, name: 'Mineral Water', price: 5000, color: '#90CDF4', icon: '💧', stock: 200 },
+  { id: 7, name: 'Donut Coklat', price: 12000, color: '#E9D8FD', icon: '🍩', stock: 12 },
+  { id: 8, name: 'Lemon Tea', price: 10000, color: '#FAF089', icon: '🍋', stock: 55 }
 ])
 
 // Cart: { productId: quantity }
 const cart = ref({})
 
 const increment = (product) => {
-  if (cart.value[product.id]) {
-    cart.value[product.id]++
+  const currentQty = cart.value[product.id] || 0
+  if (currentQty < product.stock) {
+    if (cart.value[product.id]) {
+      cart.value[product.id]++
+    } else {
+      cart.value[product.id] = 1
+    }
   } else {
-    cart.value[product.id] = 1
+    alert(`Stok tidak mencukupi. Maksimal: ${product.stock}`)
   }
 }
 
@@ -116,6 +131,34 @@ const handleCheckout = () => {
   box-shadow: 0 2px 5px rgba(0,0,0,0.05);
   cursor: pointer;
   transition: transform 0.1s;
+  border: 2px solid transparent;
+}
+
+.product-card.low-stock-limit {
+  border-color: #f6e05e; /* Highlight border for low stock */
+}
+
+.control-btn:disabled {
+  background-color: #cbd5e0 !important;
+  color: #a0aec0 !important;
+  cursor: not-allowed;
+}
+
+.meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.stock-info {
+  font-size: 0.75em;
+  color: #718096;
+}
+
+.stock-info.low-stock {
+  color: #d69e2e;
+  font-weight: 600;
 }
 
 .product-card:active {
