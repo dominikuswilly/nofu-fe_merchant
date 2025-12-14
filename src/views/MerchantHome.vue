@@ -30,11 +30,7 @@
 
       <div v-else-if="activeTab === 'balance'" class="tab-content">
         <h2>Saldo Merchant</h2>
-        <div class="card balance-card">
-          <h3>Rp 0</h3>
-          <p>Saldo Tersedia</p>
-          <button class="action-btn outline">Tarik Dana</button>
-        </div>
+        <MerchantBalance @viewHistory="activeTab = 'history'" />
       </div>
     </main>
 
@@ -72,6 +68,7 @@ import MerchantProduct from '../components/MerchantProduct.vue'
 import MerchantTransaction from '../components/MerchantTransaction.vue'
 import MerchantDefective from '../components/MerchantDefective.vue'
 import MerchantRestock from '../components/MerchantRestock.vue'
+import MerchantBalance from '../components/MerchantBalance.vue'
 
 const router = useRouter()
 // Load saved tab from localStorage or default to 'transaction'
@@ -183,32 +180,6 @@ onMounted(() => {
   margin-bottom: 16px;
 }
 
-.action-btn {
-  background-color: #667eea;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  margin-top: 10px;
-}
-
-.action-btn.outline {
-  background-color: transparent;
-  border: 2px solid #667eea;
-  color: #667eea;
-}
-
-.balance-card {
-  text-align: center;
-}
-
-.balance-card h3 {
-  font-size: 2em;
-  color: #2d3748;
-  margin: 10px 0;
-}
 
 .gps-guard-overlay {
   position: fixed;
