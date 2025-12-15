@@ -1,6 +1,6 @@
 <template>
   <div class="merchant-home">
-    <MerchantHeader @logout="handleLogout" @checkIn="handleCheckIn" />
+    <MerchantHeader @logout="handleLogout" @checkIn="handleCheckIn" @toTransaction="activeTab = 'transaction'" />
     
     <main class="content-area">
       <div v-if="activeTab === 'transaction'" class="tab-content">

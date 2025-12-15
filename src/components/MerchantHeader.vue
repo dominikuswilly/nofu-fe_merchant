@@ -1,20 +1,18 @@
 <template>
   <header class="merchant-header">
     <div class="header-content">
-      <h1 class="brand">Merchant Portal</h1>
+      <h1 class="brand" @click="$emit('toTransaction')">Merchant Portal</h1>
       <div class="actions">
         <div class="user-menu-container">
           <span class="icon" @click="toggleMenu">👤</span>
           <div v-if="showMenu" class="dropdown-menu">
             <div class="profile-info">
-              <p class="name">{{ merchant.name || 'Merchant' }}</p>
-              <p class="email">{{ merchant.email || 'email@example.com' }}</p>
-              <p class="username">@{{ merchant.username || 'username' }}</p>
+              <p class="name">{{ merchant.name || "Merchant" }}</p>
+              <p class="email">{{ merchant.email || "email@example.com" }}</p>
+              <p class="username">@{{ merchant.username || "username" }}</p>
             </div>
             <div class="divider"></div>
-            <div class="menu-item" @click="$emit('checkIn')">
-              📍 Check-in
-            </div>
+            <div class="menu-item" @click="$emit('checkIn')">📍 Check-in</div>
             <div class="menu-item logout" @click="$emit('logout')">
               🚪 Keluar
             </div>
@@ -26,33 +24,33 @@
 </template>
 
 <script setup>
-import { ref, defineEmits, onMounted } from 'vue'
+import { ref, defineEmits, onMounted } from "vue";
 
-defineEmits(['logout', 'checkIn'])
+defineEmits(["logout", "checkIn", "toTransaction"]);
 
-const showMenu = ref(false)
-const merchant = ref({})
+const showMenu = ref(false);
+const merchant = ref({});
 
 const toggleMenu = () => {
-  showMenu.value = !showMenu.value
-}
+  showMenu.value = !showMenu.value;
+};
 
 onMounted(() => {
   try {
-    const storedMerchant = localStorage.getItem('merchant')
+    const storedMerchant = localStorage.getItem("merchant");
     if (storedMerchant) {
-      merchant.value = JSON.parse(storedMerchant)
+      merchant.value = JSON.parse(storedMerchant);
     }
   } catch (e) {
-    console.error('Failed to parse merchant data', e)
+    console.error("Failed to parse merchant data", e);
   }
-})
+});
 </script>
 
 <style scoped>
 .merchant-header {
   background-color: #ffffff;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   padding: 16px 20px;
   position: sticky;
   top: 0;
@@ -72,6 +70,7 @@ onMounted(() => {
   font-weight: 700;
   color: #2d3748;
   margin: 0;
+  cursor: pointer;
 }
 
 .actions {
@@ -97,7 +96,7 @@ onMounted(() => {
   margin-top: 10px;
   background: white;
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   min-width: 200px;
   padding: 8px 0;
   border: 1px solid #e2e8f0;
