@@ -67,6 +67,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { sha512 } from 'js-sha512'
 import ToastNotification from '../components/ToastNotification.vue'
+import { getEnv } from '../utils/config'
 
 const router = useRouter()
 
@@ -107,7 +108,8 @@ const handleLogin = async () => {
   try {
     // Kirim POST request ke API
     const hashedPassword = sha512(form.value.password)
-    const response = await fetch('/api/merchants/login', {
+    const backendUrl = getEnv('VUE_APP_BACKEND_URL') || ''
+    const response = await fetch(`${backendUrl}/api/merchants/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -158,7 +160,7 @@ const handleLogin = async () => {
 
 // GPS Guard Logic
 // Check if GPS is required based on environment
-const gpsRequired = process.env.NODE_ENV === 'production'
+const gpsRequired = getEnv('NODE_ENV') === 'production'
 
 const gpsAllowed = ref(false)
 const gpsMessage = ref('Memeriksa izin lokasi...')

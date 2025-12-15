@@ -69,6 +69,7 @@ import MerchantTransaction from '../components/MerchantTransaction.vue'
 import MerchantDefective from '../components/MerchantDefective.vue'
 import MerchantRestock from '../components/MerchantRestock.vue'
 import MerchantBalance from '../components/MerchantBalance.vue'
+import { getEnv } from '../utils/config'
 
 const router = useRouter()
 // Load saved tab from localStorage or default to 'transaction'
@@ -115,7 +116,7 @@ const handleCheckIn = () => {
 
 // GPS Guard Logic
 // Check if GPS is required based on environment
-const gpsRequired = process.env.NODE_ENV === 'production'
+const gpsRequired = getEnv('NODE_ENV') === 'production'
 
 const gpsAllowed = ref(false)
 const gpsMessage = ref('Memeriksa izin lokasi...')

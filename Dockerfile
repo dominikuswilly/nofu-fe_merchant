@@ -28,8 +28,15 @@ RUN npm install -g serve
 # Copy built files from build stage
 COPY --from=build-stage /app/dist ./dist
 
+# Copy entrypoint script
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+
 # Expose port 8080 (or change to 80 if preferred)
 EXPOSE 8080
+
+# Set entrypoint
+ENTRYPOINT ["/docker-entrypoint.sh"]
 
 # Start the server (serves from /app/dist on port 3000 by default, but we map to 8080)
 CMD ["serve", "-s", "dist", "-l", "8080"]
