@@ -1,4 +1,4 @@
 window.config = {
-  VUE_APP_BACKEND_URL: "http://app.netbird.cloud:8080",
+  VUE_APP_BACKEND_URL: "",
   NODE_ENV: "development"
 };
