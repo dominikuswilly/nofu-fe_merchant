@@ -7,12 +7,11 @@ module.exports = defineConfig({
       webSocketURL: 'auto://0.0.0.0:0/ws',
     },
     proxy: {
-      '/api': {
-        target: 'http://app.netbird.cloud:8080',
-        changeOrigin: true,
-        pathRewrite: {
-          '^/api': '/api',
-        },
+      '/api': {  // Proxy any /api/* calls
+        target: 'http://app.netbird.cloud:8080',  // Your backend URL
+        changeOrigin: true,  // Changes the origin of the host header to the target URL
+        secure: false,  // For HTTP backends; set true for HTTPS
+        logLevel: 'info',  // Shows proxy logs in console
       },
     },
   },
