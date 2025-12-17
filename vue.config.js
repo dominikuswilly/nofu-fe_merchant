@@ -8,7 +8,7 @@ module.exports = defineConfig({
     },
     proxy: {
       '/api': {  // Proxy any /api/* calls
-        target: 'http://100.80.201.235',  // Your backend URL
+        target: 'http://kopinofu.com',  // Your backend URL
         changeOrigin: true,  // Changes the origin of the host header to the target URL
         secure: false,  // For HTTP backends; set true for HTTPS
         logLevel: 'debug',  // Shows proxy logs in console

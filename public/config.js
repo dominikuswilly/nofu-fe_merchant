@@ -1,4 +1,4 @@
 window.config = {
-  VUE_APP_BACKEND_URL: "http://100.80.201.235/api",
+  VUE_APP_BACKEND_URL: "http://kopinofu.com/api",
   NODE_ENV: "development"
 };
