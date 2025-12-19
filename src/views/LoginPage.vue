@@ -161,7 +161,7 @@ const handleLogin = async () => {
 
 // GPS Guard Logic
 // Check if GPS is required based on environment
-const gpsRequired = getEnv('NODE_ENV') === 'production'
+const gpsRequired = getEnv('VUE_APP_GPS_ENABLED') === 'true'
 
 const gpsAllowed = ref(false)
 const gpsMessage = ref('Memeriksa izin lokasi...')

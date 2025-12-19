@@ -1,5 +1,6 @@
 const { defineConfig } = require('@vue/cli-service')
 module.exports = defineConfig({
+  publicPath: '/', // Ensure assets are loaded from root regardless of route
   transpileDependencies: true,
   chainWebpack: config => {
     config
@@ -7,7 +8,7 @@ module.exports = defineConfig({
       .tap(args => {
         // Define global variables explicitly
         args[0]['process.env'].VUE_APP_BACKEND_URL = JSON.stringify('https://merchantdev.bengkelfajarjaya.com/api/customer')
-        args[0]['process.env'].NODE_ENV = JSON.stringify('development') // Set to 'production' to enable GPS requirement
+        args[0]['process.env'].VUE_APP_GPS_ENABLED = JSON.stringify('false') // Set to 'true' to enable GPS requirement
         return args
       })
   },
