@@ -7,7 +7,7 @@ module.exports = defineConfig({
       .plugin('define')
       .tap(args => {
         // Define global variables - read from env with fallback defaults
-        const backendUrl = process.env.VUE_APP_BACKEND_URL || 'https://merchantdev.bengkelfajarjaya.com/api/customer'
+        const backendUrl = process.env.VUE_APP_BACKEND_URL || 'https://api.merchantdev.bengkelfajarjaya.com/api/customer'
         const gpsEnabled = process.env.VUE_APP_GPS_ENABLED || 'false'
         
         args[0]['process.env'].VUE_APP_BACKEND_URL = JSON.stringify(backendUrl)
@@ -22,7 +22,7 @@ module.exports = defineConfig({
     },
     proxy: {
       '/api/customer': {  // Proxy any /api/* calls
-        target: 'https://merchantdev.bengkelfajarjaya.com/api/customer',  // Your backend URL
+        target: 'https://api.merchantdev.bengkelfajarjaya.com/api/customer',  // Your backend URL
         changeOrigin: true,  // Changes the origin of the host header to the target URL
         secure: false,  // For HTTP backends; set true for HTTPS
         logLevel: 'debug',  // Shows proxy logs in console

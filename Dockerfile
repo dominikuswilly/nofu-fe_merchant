@@ -14,7 +14,7 @@ RUN npm install
 COPY . .
 
 # Accept build arguments (these are set at docker build time)
-ARG VUE_APP_BACKEND_URL=https://merchantdev.bengkelfajarjaya.com/api
+ARG VUE_APP_BACKEND_URL=https://api.merchantdev.bengkelfajarjaya.com
 ARG NODE_ENV=production
 
 # Set as environment variables for the build process
