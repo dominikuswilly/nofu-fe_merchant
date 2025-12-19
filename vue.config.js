@@ -6,9 +6,12 @@ module.exports = defineConfig({
     config
       .plugin('define')
       .tap(args => {
-        // Define global variables explicitly
-        args[0]['process.env'].VUE_APP_BACKEND_URL = JSON.stringify('https://merchantdev.bengkelfajarjaya.com/api/customer')
-        args[0]['process.env'].VUE_APP_GPS_ENABLED = JSON.stringify('false') // Set to 'true' to enable GPS requirement
+        // Define global variables - read from env with fallback defaults
+        const backendUrl = process.env.VUE_APP_BACKEND_URL || 'https://merchantdev.bengkelfajarjaya.com/api/customer'
+        const gpsEnabled = process.env.VUE_APP_GPS_ENABLED || 'false'
+        
+        args[0]['process.env'].VUE_APP_BACKEND_URL = JSON.stringify(backendUrl)
+        args[0]['process.env'].VUE_APP_GPS_ENABLED = JSON.stringify(gpsEnabled)
         return args
       })
   },
