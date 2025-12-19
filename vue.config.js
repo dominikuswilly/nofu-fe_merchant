@@ -7,6 +7,7 @@ module.exports = defineConfig({
       .tap(args => {
         // Define global variables explicitly
         args[0]['process.env'].VUE_APP_BACKEND_URL = JSON.stringify('https://merchantdev.bengkelfajarjaya.com/api/customer')
+        args[0]['process.env'].NODE_ENV = JSON.stringify('development') // Set to 'production' to enable GPS requirement
         return args
       })
   },
