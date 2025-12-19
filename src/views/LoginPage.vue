@@ -130,32 +130,44 @@ const handleLogin = async () => {
     console.log('Response status:', response.status)
     console.log('Response ok:', response.ok)
 
+    // Check content-type BEFORE trying to parse
+    const contentType = response.headers.get('content-type')
+    console.log('Response content-type:', contentType)
+
     // Cek status respons
     if (response.ok) {
-      const data = await response.json()
-      console.log('Login response data:', data)
-      
-      // Example: token location may vary depending on backend
-      const token = data.token || data.access_token || data.data?.token
-      const merchantId = data.merchant?.id || data.id || data.merchant_id
+      // Check if response is actually JSON
+      if (contentType && contentType.includes('application/json')) {
+        const data = await response.json()
+        console.log('Login response data:', data)
+        
+        // Example: token location may vary depending on backend
+        const token = data.token || data.access_token || data.data?.token
+        const merchantId = data.merchant?.id || data.id || data.merchant_id
 
-      // Save token and merchant (adjust to your security policy)
-      if (token) localStorage.setItem('auth_token', token)
-      if (data.merchant) localStorage.setItem('merchant', JSON.stringify(data.merchant))
+        // Save token and merchant (adjust to your security policy)
+        if (token) localStorage.setItem('auth_token', token)
+        if (data.merchant) localStorage.setItem('merchant', JSON.stringify(data.merchant))
 
-      // Notify user (optional)
-      triggerToast(`Login berhasil! Selamat datang, ${data.name || 'Merchant'}`, 'success')
+        // Notify user (optional)
+        triggerToast(`Login berhasil! Selamat datang, ${data.name || 'Merchant'}`, 'success')
 
-      // Navigate to merchant page. Prefer route name for clarity — see router setup below.
-      setTimeout(() => {
-        if (merchantId) {
-          // replace so user can't go back to login easily
-          router.replace({ name: 'MerchantHome', params: { id: merchantId } })
-        } else {
-          // fallback route if backend doesn't return id
-          router.replace({ path: '/merchants' })
-        }
-      }, 1000) // Delay slightly to show success toast
+        // Navigate to merchant page. Prefer route name for clarity — see router setup below.
+        setTimeout(() => {
+          if (merchantId) {
+            // replace so user can't go back to login easily
+            router.replace({ name: 'MerchantHome', params: { id: merchantId } })
+          } else {
+            // fallback route if backend doesn't return id
+            router.replace({ path: '/merchants' })
+          }
+        }, 1000) // Delay slightly to show success toast
+      } else {
+        // Backend returned 200 OK but with HTML/other content instead of JSON
+        const textResponse = await response.text()
+        console.error('Backend returned 200 OK but non-JSON content:', textResponse.substring(0, 500))
+        triggerToast('Login berhasil, tetapi server mengembalikan format yang tidak diharapkan. Hubungi admin.', 'warning')
+      }
     } else {
       // Handle non-OK responses
       const contentType = response.headers.get('content-type')
