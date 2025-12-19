@@ -6,7 +6,7 @@ module.exports = defineConfig({
       .plugin('define')
       .tap(args => {
         // Define global variables explicitly
-        args[0]['process.env'].VUE_APP_BACKEND_URL = JSON.stringify('http://kopinofu.com/api/customer')
+        args[0]['process.env'].VUE_APP_BACKEND_URL = JSON.stringify('https://merchantdev.bengkelfajarjaya.com/api/customer')
         return args
       })
   },
@@ -17,7 +17,7 @@ module.exports = defineConfig({
     },
     proxy: {
       '/api/customer': {  // Proxy any /api/* calls
-        target: 'http://kopinofu.com/api/customer',  // Your backend URL
+        target: 'https://merchantdev.bengkelfajarjaya.com/api/customer',  // Your backend URL
         changeOrigin: true,  // Changes the origin of the host header to the target URL
         secure: false,  // For HTTP backends; set true for HTTPS
         logLevel: 'debug',  // Shows proxy logs in console
