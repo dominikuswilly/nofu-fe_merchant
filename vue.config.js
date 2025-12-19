@@ -1,6 +1,15 @@
 const { defineConfig } = require('@vue/cli-service')
 module.exports = defineConfig({
   transpileDependencies: true,
+  chainWebpack: config => {
+    config
+      .plugin('define')
+      .tap(args => {
+        // Define global variables explicitly
+        args[0]['process.env'].VUE_APP_BACKEND_URL = JSON.stringify('http://kopinofu.com/api/customer')
+        return args
+      })
+  },
   devServer: {
     allowedHosts: 'all',
     client: {
