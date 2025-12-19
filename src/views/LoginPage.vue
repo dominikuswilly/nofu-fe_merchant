@@ -109,8 +109,14 @@ const handleLogin = async () => {
     // Kirim POST request ke API
     const hashedPassword = sha512(form.value.password)
     const backendUrl = getEnv('VUE_APP_BACKEND_URL') || ''
-    console.log(backendUrl)
-    const response = await fetch(`${backendUrl}/merchants/login`, {
+    const apiUrl = `${backendUrl}/merchants/login`
+    
+    console.log('=== LOGIN REQUEST ===')
+    console.log('Backend URL:', backendUrl)
+    console.log('Full API URL:', apiUrl)
+    console.log('Username:', form.value.username)
+    
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -121,9 +127,14 @@ const handleLogin = async () => {
       })
     })
 
+    console.log('Response status:', response.status)
+    console.log('Response ok:', response.ok)
+
     // Cek status respons
     if (response.ok) {
       const data = await response.json()
+      console.log('Login response data:', data)
+      
       // Example: token location may vary depending on backend
       const token = data.token || data.access_token || data.data?.token
       const merchantId = data.merchant?.id || data.id || data.merchant_id
@@ -146,9 +157,20 @@ const handleLogin = async () => {
         }
       }, 1000) // Delay slightly to show success toast
     } else {
-      const errData = await response.json().catch(() => ({}))
-      const errorMsg = errData.message || 'Login gagal: Cek kembali username dan password'
-      triggerToast(errorMsg, 'error')
+      // Handle non-OK responses
+      const contentType = response.headers.get('content-type')
+      console.log('Error response content-type:', contentType)
+      
+      if (contentType && contentType.includes('application/json')) {
+        const errData = await response.json()
+        const errorMsg = errData.message || 'Login gagal: Cek kembali username dan password'
+        triggerToast(errorMsg, 'error')
+      } else {
+        // Backend returned HTML or other non-JSON content
+        const textResponse = await response.text()
+        console.error('Non-JSON response:', textResponse.substring(0, 200))
+        triggerToast(`Login gagal: Server mengembalikan error (${response.status}). Endpoint mungkin tidak tersedia.`, 'error')
+      }
     }
   } catch (error) {
     console.error('Error saat login:', error)
