@@ -13,6 +13,14 @@ RUN npm install
 # Copy the rest of the application code
 COPY . .
 
+# Accept build arguments (these are set at docker build time)
+ARG VUE_APP_BACKEND_URL=https://merchantdev.bengkelfajarjaya.com/api
+ARG NODE_ENV=production
+
+# Set as environment variables for the build process
+ENV VUE_APP_BACKEND_URL=$VUE_APP_BACKEND_URL
+ENV NODE_ENV=$NODE_ENV
+
 # Build the application
 RUN npm run build
 
