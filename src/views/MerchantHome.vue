@@ -70,6 +70,7 @@ import MerchantDefective from '../components/MerchantDefective.vue'
 import MerchantRestock from '../components/MerchantRestock.vue'
 import MerchantBalance from '../components/MerchantBalance.vue'
 import { getEnv } from '../utils/config'
+import { clearAuth } from '../utils/auth'
 
 const router = useRouter()
 // Load saved tab from localStorage or default to 'transaction'
@@ -83,11 +84,11 @@ watch(activeTab, (newTab) => {
 const handleLogout = () => {
   const confirmLogout = confirm('Apakah Anda yakin ingin keluar?')
   if (confirmLogout) {
-    // Clear auth data
-    localStorage.removeItem('auth_token')
-    localStorage.removeItem('merchant')
+    // Clear all auth data including activeTab
+    clearAuth()
+    localStorage.removeItem('activeTab')
     
-    // Compute correct route for login
+    // Navigate to login page
     router.replace({ name: 'LoginPage' }).catch(() => {
       // Fallback if name not found
       router.replace('/')

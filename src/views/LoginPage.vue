@@ -68,6 +68,7 @@ import { useRouter } from 'vue-router'
 import { sha512 } from 'js-sha512'
 import ToastNotification from '../components/ToastNotification.vue'
 import { getEnv } from '../utils/config'
+import { setAuthData } from '../utils/auth'
 
 const router = useRouter()
 
@@ -138,30 +139,53 @@ const handleLogin = async () => {
     if (response.ok) {
       // Check if response is actually JSON
       if (contentType && contentType.includes('application/json')) {
-        const data = await response.json()
-        console.log('Login response data:', data)
+        const responseData = await response.json()
+        console.log('Login response data:', responseData)
         
-        // Example: token location may vary depending on backend
-        const token = data.token || data.access_token || data.data?.token
-        const merchantId = data.merchant?.id || data.id || data.merchant_id
-
-        // Save token and merchant (adjust to your security policy)
-        if (token) localStorage.setItem('auth_token', token)
-        if (data.merchant) localStorage.setItem('merchant', JSON.stringify(data.merchant))
-
-        // Notify user (optional)
-        triggerToast(`Login berhasil! Selamat datang, ${data.name || 'Merchant'}`, 'success')
-
-        // Navigate to merchant page. Prefer route name for clarity — see router setup below.
-        setTimeout(() => {
-          if (merchantId) {
-            // replace so user can't go back to login easily
-            router.replace({ name: 'MerchantHome', params: { id: merchantId } })
-          } else {
-            // fallback route if backend doesn't return id
-            router.replace({ path: '/merchants' })
+        // Handle the new response format
+        // {
+        //   "responseCode": "200",
+        //   "responseMessage": "success",
+        //   "data": {
+        //     "token": "...",
+        //     "expiresAt": "...",
+        //     "user": { ... }
+        //   }
+        // }
+        
+        if (responseData.responseCode === "200" && responseData.data) {
+          const { data } = responseData
+          
+          // Store authentication data using auth utility
+          setAuthData(data)
+          
+          // Also store merchant data if it exists (for backward compatibility)
+          if (data.merchant) {
+            localStorage.setItem('merchant', JSON.stringify(data.merchant))
           }
-        }, 1000) // Delay slightly to show success toast
+
+          // Get user name for welcome message
+          const userName = data.user?.name || data.user?.username || 'Merchant'
+          
+          // Notify user
+          triggerToast(`Login berhasil! Selamat datang, ${userName}`, 'success')
+
+          // Navigate to merchant page
+          setTimeout(() => {
+            const merchantId = data.merchant?.id || data.user?.id
+            if (merchantId) {
+              // replace so user can't go back to login easily
+              router.replace({ name: 'MerchantHome', params: { id: merchantId } })
+            } else {
+              // fallback route if backend doesn't return id
+              router.replace({ name: 'Merchants' })
+            }
+          }, 1000) // Delay slightly to show success toast
+        } else {
+          // Response OK but not successful
+          const errorMsg = responseData.responseMessage || 'Login gagal'
+          triggerToast(errorMsg, 'error')
+        }
       } else {
         // Backend returned 200 OK but with HTML/other content instead of JSON
         const textResponse = await response.text()
@@ -175,7 +199,7 @@ const handleLogin = async () => {
       
       if (contentType && contentType.includes('application/json')) {
         const errData = await response.json()
-        const errorMsg = errData.message || 'Login gagal: Cek kembali username dan password'
+        const errorMsg = errData.responseMessage || errData.message || 'Login gagal: Cek kembali username dan password'
         triggerToast(errorMsg, 'error')
       } else {
         // Backend returned HTML or other non-JSON content
