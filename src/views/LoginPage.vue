@@ -109,7 +109,7 @@ const handleLogin = async () => {
     // Kirim POST request ke API
     const hashedPassword = sha512(form.value.password)
     const backendUrl = getEnv('VUE_APP_BACKEND_URL') || ''
-    const apiUrl = `${backendUrl}/api/customer/merchants/login?t=${Date.now()}`
+    const apiUrl = `${backendUrl}/merchants/login?t=${Date.now()}`
     
     console.log('=== LOGIN REQUEST ===')
     console.log('Backend URL:', backendUrl)
