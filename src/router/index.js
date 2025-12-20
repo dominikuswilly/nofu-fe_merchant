@@ -1,13 +1,16 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import LoginPage from '../views/LoginPage.vue'
 import MerchantHome from '../views/MerchantHome.vue'
+import NotFound from '../views/NotFound.vue'
 import { isAuthenticated } from '../utils/auth'
 
 const routes = [
     { path: '/', redirect: '/login' },
     { path: '/login', name: 'LoginPage', component: LoginPage, meta: { requiresGuest: true } },
     { path: '/merchants/:id', name: 'MerchantHome', component: MerchantHome, props: true, meta: { requiresAuth: true } },
-    { path: '/merchants', name: 'Merchants', component: MerchantHome, meta: { requiresAuth: true } } // fallback if you want a list route
+    { path: '/merchants', name: 'Merchants', component: MerchantHome, meta: { requiresAuth: true } },
+    // 404 catch-all route - must be last
+    { path: '/:pathMatch(.*)*', name: 'NotFound', component: NotFound }
 ]
 
 
