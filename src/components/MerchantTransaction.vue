@@ -1,6 +1,20 @@
 <template>
   <div class="merchant-transaction">
-    <div class="product-grid">
+    <div v-if="loading" class="state-message">
+      <div class="loader"></div>
+      <p>Memuat produk...</p>
+    </div>
+
+    <div v-else-if="error" class="state-message error">
+      <p>{{ error }}</p>
+      <button @click="fetchProducts" class="retry-btn">Coba Lagi</button>
+    </div>
+
+    <div v-else-if="products.length === 0" class="state-message">
+      <p>Tidak ada produk yang tersedia.</p>
+    </div>
+
+    <div v-else class="product-grid">
       <div 
         v-for="product in products" 
         :key="product.id"
@@ -115,18 +129,53 @@
 </template>
 
 <script setup>
-import { ref, computed, nextTick } from 'vue'
+import { ref, computed, nextTick, onMounted } from 'vue'
+import { get } from '@/utils/api'
 
-const products = ref([
-  { id: 1, name: 'Kopi Susu Gula Aren', price: 18000, color: '#D6BCFA', icon: '☕', stock: 120 },
-  { id: 2, name: 'Croissant Butter', price: 25000, color: '#F6E05E', icon: '🥐', stock: 30 },
-  { id: 3, name: 'Americano Hot', price: 15000, color: '#FEB2B2', icon: '☕', stock: 8 },
-  { id: 4, name: 'Matcha Latte', price: 22000, color: '#9AE6B4', icon: '🍵', stock: 75 },
-  { id: 5, name: 'Sandwich Tuna', price: 30000, color: '#FBD38D', icon: '🥪', stock: 45 },
-  { id: 6, name: 'Mineral Water', price: 5000, color: '#90CDF4', icon: '💧', stock: 200 },
-  { id: 7, name: 'Donut Coklat', price: 12000, color: '#E9D8FD', icon: '🍩', stock: 12 },
-  { id: 8, name: 'Lemon Tea', price: 10000, color: '#FAF089', icon: '🍋', stock: 55 }
-])
+const products = ref([])
+const loading = ref(false)
+const error = ref(null)
+
+const fetchProducts = async () => {
+  loading.value = true
+  error.value = null
+  
+  try {
+    const response = await get('/api/product/products')
+    
+    if (response.responseCode === "200" || response.status === "success" || Array.isArray(response.data)) {
+      products.value = (response.data || response).map(p => ({
+        id: p.id || p.id_product,
+        name: p.name || p.product_name,
+        price: p.price || p.product_price || 0,
+        stock: p.stock || p.qty || 0,
+        color: p.color || getRandomColor(),
+        icon: p.icon || '📦'
+      }))
+    } else if (Array.isArray(response)) {
+      products.value = response.map(p => ({
+        id: p.id || p.id_product,
+        name: p.name || p.product_name,
+        price: p.price || p.product_price || 0,
+        stock: p.stock || p.qty || 0,
+        color: p.color || getRandomColor(),
+        icon: p.icon || '📦'
+      }))
+    } else {
+      error.value = response.responseMessage || 'Gagal memuat data produk'
+    }
+  } catch (err) {
+    console.error('Error fetching products:', err)
+    error.value = err.message || 'Terjadi kesalahan saat memuat data produk'
+  } finally {
+    loading.value = false
+  }
+}
+
+const getRandomColor = () => {
+  const colors = ['#D6BCFA', '#F6E05E', '#FEB2B2', '#9AE6B4', '#FBD38D', '#90CDF4', '#E9D8FD', '#FAF089']
+  return colors[Math.floor(Math.random() * colors.length)]
+}
 
 // Cart: { productId: quantity }
 const cart = ref({})
@@ -163,7 +212,7 @@ const totalItems = computed(() => {
 
 const cartItems = computed(() => {
   return Object.keys(cart.value).map(id => {
-    const product = products.value.find(p => p.id === parseInt(id))
+    const product = products.value.find(p => String(p.id) === String(id))
     return {
       ...product,
       qty: cart.value[id],
@@ -174,7 +223,7 @@ const cartItems = computed(() => {
 
 const totalPrice = computed(() => {
   return Object.keys(cart.value).reduce((total, id) => {
-    const product = products.value.find(p => p.id === parseInt(id))
+    const product = products.value.find(p => String(p.id) === String(id))
     return total + (product.price * cart.value[id])
   }, 0)
 })
@@ -221,12 +270,65 @@ const cancelTransaction = () => {
   cart.value = {}
   alert('Transaksi sudah dibatalkan')
 }
+
+onMounted(() => {
+  fetchProducts()
+})
 </script>
 
 <style scoped>
 .merchant-transaction {
   padding-bottom: 80px; /* Space for checkout bar */
   position: relative;
+}
+
+.state-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  color: #718096;
+  margin-bottom: 20px;
+}
+
+.state-message.error {
+  color: #e53e3e;
+}
+
+.retry-btn {
+  margin-top: 16px;
+  padding: 10px 24px;
+  background-color: #667eea;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.retry-btn:hover {
+  background-color: #5a67d8;
+  transform: translateY(-2px);
+}
+
+.loader {
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #667eea;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 /* Locked Overlay Styles */
