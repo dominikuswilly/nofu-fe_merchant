@@ -6,14 +6,17 @@ import { getToken, clearAuth } from './auth'
 import { getEnv } from './config'
 
 const BASE_URL = getEnv('VUE_APP_BACKEND_URL') || ''
+const CUSTOMER_BASE_URL = getEnv('VUE_APP_CUSTOMER_API_URL') || `${BASE_URL}/customer`
+const PRODUCT_BASE_URL = getEnv('VUE_APP_PRODUCT_API_URL') || `${BASE_URL}/product`
 
 /**
  * Make an authenticated API request
  * @param {string} endpoint - API endpoint (without base URL)
  * @param {Object} options - Fetch options
+ * @param {string} customBaseUrl - Optional custom base URL
  * @returns {Promise} Response data
  */
-export const apiRequest = async (endpoint, options = {}) => {
+export const apiRequest = async (endpoint, options = {}, customBaseUrl = null) => {
   const token = getToken()
   
   // Prepare headers
@@ -28,7 +31,8 @@ export const apiRequest = async (endpoint, options = {}) => {
   }
   
   // Build full URL
-  const url = `${BASE_URL}${endpoint}`
+  const baseUrl = customBaseUrl || BASE_URL
+  const url = `${baseUrl}${endpoint}`
   
   // Make request
   try {
@@ -36,7 +40,7 @@ export const apiRequest = async (endpoint, options = {}) => {
       ...options,
       headers
     })
-    
+// ... existing code ...
     // Handle unauthorized (token expired or invalid)
     if (response.status === 401) {
       clearAuth()
@@ -70,43 +74,22 @@ export const apiRequest = async (endpoint, options = {}) => {
 }
 
 /**
- * GET request
+ * Create a service-specific API instance
  */
-export const get = (endpoint, options = {}) => {
-  return apiRequest(endpoint, {
-    ...options,
-    method: 'GET'
-  })
-}
+const createService = (baseUrl) => ({
+  get: (endpoint, options = {}) => apiRequest(endpoint, { ...options, method: 'GET' }, baseUrl),
+  post: (endpoint, data, options = {}) => apiRequest(endpoint, { ...options, method: 'POST', body: JSON.stringify(data) }, baseUrl),
+  put: (endpoint, data, options = {}) => apiRequest(endpoint, { ...options, method: 'PUT', body: JSON.stringify(data) }, baseUrl),
+  del: (endpoint, options = {}) => apiRequest(endpoint, { ...options, method: 'DELETE' }, baseUrl),
+})
+
+export const customerApi = createService(CUSTOMER_BASE_URL)
+export const productApi = createService(PRODUCT_BASE_URL)
 
 /**
- * POST request
+ * Default exports for backward compatibility (using BASE_URL)
  */
-export const post = (endpoint, data, options = {}) => {
-  return apiRequest(endpoint, {
-    ...options,
-    method: 'POST',
-    body: JSON.stringify(data)
-  })
-}
-
-/**
- * PUT request
- */
-export const put = (endpoint, data, options = {}) => {
-  return apiRequest(endpoint, {
-    ...options,
-    method: 'PUT',
-    body: JSON.stringify(data)
-  })
-}
-
-/**
- * DELETE request
- */
-export const del = (endpoint, options = {}) => {
-  return apiRequest(endpoint, {
-    ...options,
-    method: 'DELETE'
-  })
-}
+export const get = (endpoint, options = {}) => apiRequest(endpoint, { ...options, method: 'GET' })
+export const post = (endpoint, data, options = {}) => apiRequest(endpoint, { ...options, method: 'POST', body: JSON.stringify(data) })
+export const put = (endpoint, data, options = {}) => apiRequest(endpoint, { ...options, method: 'PUT', body: JSON.stringify(data) })
+export const del = (endpoint, options = {}) => apiRequest(endpoint, { ...options, method: 'DELETE' })

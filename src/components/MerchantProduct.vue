@@ -41,7 +41,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { get } from '@/utils/api'
+import { productApi } from '@/utils/api'
 
 const products = ref([])
 const loading = ref(false)
@@ -52,7 +52,7 @@ const fetchProducts = async () => {
   error.value = null
   
   try {
-    const response = await get('/api/product/products')
+    const response = await productApi.get('/products')
     
     // Based on api-usage-example.js, we expect a response structure
     if (response.responseCode === "200" || response.status === "success" || Array.isArray(response.data)) {

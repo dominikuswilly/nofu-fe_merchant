@@ -69,6 +69,7 @@ import { sha512 } from 'js-sha512'
 import ToastNotification from '../components/ToastNotification.vue'
 import { getEnv } from '../utils/config'
 import { setAuthData } from '../utils/auth'
+import { customerApi } from '../utils/api'
 
 const router = useRouter()
 
@@ -109,104 +110,45 @@ const handleLogin = async () => {
   try {
     // Kirim POST request ke API
     const hashedPassword = sha512(form.value.password)
-    const backendUrl = getEnv('VUE_APP_BACKEND_URL') || ''
-    const apiUrl = `${backendUrl}/merchants/login?t=${Date.now()}`
-    
-    console.log('=== LOGIN REQUEST ===')
-    console.log('Backend URL:', backendUrl)
-    console.log('Full API URL:', apiUrl)
-    console.log('Username:', form.value.username)
-    
-    const response = await fetch(apiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        username: form.value.username,
-        password: hashedPassword
-      })
+    const responseData = await customerApi.post(`/merchants/login?t=${Date.now()}`, {
+      username: form.value.username,
+      password: hashedPassword
     })
 
-    console.log('Response status:', response.status)
-    console.log('Response ok:', response.ok)
-
-    // Check content-type BEFORE trying to parse
-    const contentType = response.headers.get('content-type')
-    console.log('Response content-type:', contentType)
-
-    // Cek status respons
-    if (response.ok) {
-      // Check if response is actually JSON
-      if (contentType && contentType.includes('application/json')) {
-        const responseData = await response.json()
-        console.log('Login response data:', responseData)
-        
-        // Handle the new response format
-        // {
-        //   "responseCode": "200",
-        //   "responseMessage": "success",
-        //   "data": {
-        //     "token": "...",
-        //     "expiresAt": "...",
-        //     "user": { ... }
-        //   }
-        // }
-        
-        if (responseData.responseCode === "200" && responseData.data) {
-          const { data } = responseData
-          
-          // Store authentication data using auth utility
-          setAuthData(data)
-          
-          // Also store merchant data if it exists (for backward compatibility)
-          if (data.merchant) {
-            localStorage.setItem('merchant', JSON.stringify(data.merchant))
-          }
-
-          // Get user name for welcome message
-          const userName = data.user?.name || data.user?.username || 'Merchant'
-          
-          // Notify user
-          triggerToast(`Login berhasil! Selamat datang, ${userName}`, 'success')
-
-          // Navigate to merchant page
-          setTimeout(() => {
-            const merchantId = data.merchant?.id || data.user?.id
-            if (merchantId) {
-              // replace so user can't go back to login easily
-              router.replace({ name: 'MerchantHome', params: { id: merchantId } })
-            } else {
-              // fallback route if backend doesn't return id
-              router.replace({ name: 'Merchants' })
-            }
-          }, 1000) // Delay slightly to show success toast
-        } else {
-          // Response OK but not successful
-          const errorMsg = responseData.responseMessage || 'Login gagal'
-          triggerToast(errorMsg, 'error')
-        }
-      } else {
-        // Backend returned 200 OK but with HTML/other content instead of JSON
-        const textResponse = await response.text()
-        console.error('Backend returned 200 OK but non-JSON content:', textResponse.substring(0, 500))
-        triggerToast('Login berhasil, tetapi server mengembalikan format yang tidak diharapkan. Hubungi admin.', 'warning')
-      }
-    } else {
-      // Handle non-OK responses
-      const contentType = response.headers.get('content-type')
-      console.log('Error response content-type:', contentType)
+    console.log('Login response data:', responseData)
+    
+    if (responseData.responseCode === "200" && responseData.data) {
+      const { data } = responseData
       
-      if (contentType && contentType.includes('application/json')) {
-        const errData = await response.json()
-        const errorMsg = errData.responseMessage || errData.message || 'Login gagal: Cek kembali username dan password'
-        triggerToast(errorMsg, 'error')
-      } else {
-        // Backend returned HTML or other non-JSON content
-        const textResponse = await response.text()
-        console.error('Non-JSON response:', textResponse.substring(0, 200))
-        triggerToast(`Login gagal: Server mengembalikan error (${response.status}). Endpoint mungkin tidak tersedia.`, 'error')
+      // Store authentication data using auth utility
+      setAuthData(data)
+      
+      // Also store merchant data if it exists (for backward compatibility)
+      if (data.merchant) {
+        localStorage.setItem('merchant', JSON.stringify(data.merchant))
       }
+
+      // Get user name for welcome message
+      const userName = data.user?.name || data.user?.username || 'Merchant'
+      
+      // Notify user
+      triggerToast(`Login berhasil! Selamat datang, ${userName}`, 'success')
+
+      // Navigate to merchant page
+      setTimeout(() => {
+        const merchantId = data.merchant?.id || data.user?.id
+        if (merchantId) {
+          // replace so user can't go back to login easily
+          router.replace({ name: 'MerchantHome', params: { id: merchantId } })
+        } else {
+          // fallback route if backend doesn't return id
+          router.replace({ name: 'Merchants' })
+        }
+      }, 1000) // Delay slightly to show success toast
+    } else {
+      // Response OK but not successful
+      const errorMsg = responseData.responseMessage || 'Login gagal'
+      triggerToast(errorMsg, 'error')
     }
   } catch (error) {
     console.error('Error saat login:', error)
