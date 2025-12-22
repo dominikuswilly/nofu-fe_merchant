@@ -150,7 +150,7 @@ const fetchProducts = async () => {
         name: p.name || p.product_name,
         price: p.price || p.product_price || 0,
         stock: p.stock || p.qty || 0,
-        image: p.image || p.image_url || p.product_image || null,
+        image: p.url || p.image || p.image_url || p.product_image || null,
         color: p.color || getRandomColor(),
         icon: p.icon || '📦'
       }))
@@ -160,7 +160,7 @@ const fetchProducts = async () => {
         name: p.name || p.product_name,
         price: p.price || p.product_price || 0,
         stock: p.stock || p.qty || 0,
-        image: p.image || p.image_url || p.product_image || null,
+        image: p.url || p.image || p.image_url || p.product_image || null,
         color: p.color || getRandomColor(),
         icon: p.icon || '📦'
       }))
