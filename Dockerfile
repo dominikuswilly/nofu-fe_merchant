@@ -14,7 +14,10 @@ RUN npm install
 COPY . .
 
 # Accept build arguments (these are set at docker build time)
-ARG VUE_APP_BACKEND_URL=https://apinofudev.bengkelfajarjaya.com/api/customer
+ARG VUE_APP_BACKEND_URL=https://apinofudev.bengkelfajarjaya.com/api
+ARG VUE_APP_CUSTOMER_API_URL=https://apinofudev.bengkelfajarjaya.com/api/customer
+ARG VUE_APP_PRODUCT_API_URL=https://apinofudev.bengkelfajarjaya.com/api/product
+
 ARG NODE_ENV=production
 
 # Set as environment variables for the build process
