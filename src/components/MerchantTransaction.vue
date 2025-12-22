@@ -23,7 +23,8 @@
         @click="increment(product)"
       >
         <div class="product-image-placeholder" :style="{ backgroundColor: product.color }">
-          <span class="icon">{{ product.icon }}</span>
+          <img v-if="product.image" :src="product.image" :alt="product.name" class="product-img" />
+          <span v-else class="icon">{{ product.icon }}</span>
           <div v-if="cart[product.id]" class="qty-controls" @click.stop>
             <button class="control-btn minus" @click="decrement(product)">-</button>
             <span class="qty">{{ cart[product.id] }}</span>
@@ -149,6 +150,7 @@ const fetchProducts = async () => {
         name: p.name || p.product_name,
         price: p.price || p.product_price || 0,
         stock: p.stock || p.qty || 0,
+        image: p.image || p.image_url || p.product_image || null,
         color: p.color || getRandomColor(),
         icon: p.icon || '📦'
       }))
@@ -158,6 +160,7 @@ const fetchProducts = async () => {
         name: p.name || p.product_name,
         price: p.price || p.product_price || 0,
         stock: p.stock || p.qty || 0,
+        image: p.image || p.image_url || p.product_image || null,
         color: p.color || getRandomColor(),
         icon: p.icon || '📦'
       }))
@@ -731,6 +734,12 @@ onMounted(() => {
 
 .icon {
   font-size: 3em;
+}
+
+.product-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .qty-controls {
