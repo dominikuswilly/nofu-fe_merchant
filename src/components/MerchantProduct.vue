@@ -18,6 +18,7 @@
       <table class="product-table">
         <thead>
           <tr>
+            <th>Gambar</th>
             <th>Nama Produk</th>
             <th class="text-right">Stok</th>
             <th class="text-right">Harga</th>
@@ -27,8 +28,14 @@
           <tr 
             v-for="product in products" 
             :key="product.id || product.id_product"
-            :class="{ 'low-stock': product.stock < 50 }"
+            :class="{ 'low-stock': (product.stock || product.qty) < 50 }"
           >
+            <td>
+              <div class="product-img-mini-container">
+                <img v-if="product.url || product.image || product.image_url" :src="product.url || product.image || product.image_url" class="product-img-mini" />
+                <div v-else class="img-placeholder-mini">📦</div>
+              </div>
+            </td>
             <td>{{ product.name || product.product_name }}</td>
             <td class="text-right">{{ product.stock || product.qty || 0 }}</td>
             <td class="text-right">{{ formatCurrency(product.price || product.product_price || 0) }}</td>
@@ -56,10 +63,26 @@ const fetchProducts = async () => {
     
     // Based on api-usage-example.js, we expect a response structure
     if (response.responseCode === "200" || response.status === "success" || Array.isArray(response.data)) {
-      products.value = response.data || response // Fallback to response if data field doesn't exist
+      products.value = (response.data || response).map(p => ({
+        ...p,
+        id: p.id || p.id_product,
+        name: p.name || p.product_name,
+        price: p.price || p.product_price || 0,
+        stock: p.stock || p.qty || 0,
+        image: p.url || p.image || p.image_url || p.product_image || null
+      }))
+      console.log('MerchantProduct: Loaded products with images:', products.value.filter(p => p.image))
     } else if (Array.isArray(response)) {
-      products.value = response
-    } else {
+      products.value = response.map(p => ({
+        ...p,
+        id: p.id || p.id_product,
+        name: p.name || p.product_name,
+        price: p.price || p.product_price || 0,
+        stock: p.stock || p.qty || 0,
+        image: p.url || p.image || p.image_url || p.product_image || null
+      }))
+    }
+ else {
       error.value = response.responseMessage || 'Gagal memuat data produk'
     }
   } catch (err) {
@@ -182,5 +205,27 @@ onMounted(() => {
 
 .low-stock:hover {
   background-color: #fef3c7; /* Yellow-100 */
+}
+
+.product-img-mini-container {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  overflow: hidden;
+  background-color: #edf2f7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e2e8f0;
+}
+
+.product-img-mini {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.img-placeholder-mini {
+  font-size: 1.2em;
 }
 </style>

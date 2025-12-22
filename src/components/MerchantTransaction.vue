@@ -154,6 +154,7 @@ const fetchProducts = async () => {
         color: p.color || getRandomColor(),
         icon: p.icon || '📦'
       }))
+      console.log('MerchantTransaction: Loaded products with images:', products.value.filter(p => p.image))
     } else if (Array.isArray(response)) {
       products.value = response.map(p => ({
         id: p.id || p.id_product,
