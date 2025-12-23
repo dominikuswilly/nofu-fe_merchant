@@ -23,7 +23,7 @@
         @click="increment(product)"
       >
         <div class="product-image-placeholder" :style="{ backgroundColor: product.color }">
-          <img v-if="product.image" :src="product.image" :alt="product.name" class="product-img" />
+          <img v-if="product.image" :src="product.image" :alt="product.name" class="product-img" @error="onImageError(product)" />
           <span v-else class="icon">{{ product.icon }}</span>
           <div v-if="cart[product.id]" class="qty-controls" @click.stop>
             <button class="control-btn minus" @click="decrement(product)">-</button>
@@ -137,6 +137,10 @@ const products = ref([])
 const loading = ref(false)
 const error = ref(null)
 
+const onImageError = (product) => {
+  console.error('MerchantTransaction: Image load error:', product.name, 'URL:', product.image)
+}
+
 const fetchProducts = async () => {
   loading.value = true
   error.value = null
@@ -145,18 +149,29 @@ const fetchProducts = async () => {
     const response = await productApi.get('/products')
     
     if (response.responseCode === "200" || response.status === "success" || Array.isArray(response.data)) {
-      products.value = (response.data || response).map(p => ({
-        id: p.id || p.id_product,
-        name: p.name || p.product_name,
-        price: p.price || p.product_price || 0,
-        stock: p.stock || p.qty || 0,
-        image: p.url || p.image || p.image_url || p.product_image || null,
-        color: p.color || getRandomColor(),
-        icon: p.icon || '📦'
-      }))
-      console.log('MerchantTransaction: Loaded products with images:', products.value.filter(p => p.image))
+      const rawData = response.data || response
+      if (Array.isArray(rawData)) {
+        products.value = rawData.map(p => ({
+          ...p,
+          id: p.id || p.id_product,
+          name: p.name || p.product_name,
+          price: p.price || p.product_price || 0,
+          stock: p.stock || p.qty || 0,
+          image: p.url || p.image || p.image_url || p.product_image || null,
+          color: p.color || getRandomColor(),
+          icon: p.icon || '📦'
+        }))
+        console.log('MerchantTransaction: Loaded products:', products.value.length)
+        if (products.value.length > 0) {
+          console.log('Sample product mapping:', {
+            raw: rawData[0],
+            mapped: products.value[0]
+          })
+        }
+      }
     } else if (Array.isArray(response)) {
       products.value = response.map(p => ({
+        ...p,
         id: p.id || p.id_product,
         name: p.name || p.product_name,
         price: p.price || p.product_price || 0,
@@ -165,7 +180,8 @@ const fetchProducts = async () => {
         color: p.color || getRandomColor(),
         icon: p.icon || '📦'
       }))
-    } else {
+    }
+ else {
       error.value = response.responseMessage || 'Gagal memuat data produk'
     }
   } catch (err) {
