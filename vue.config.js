@@ -13,6 +13,12 @@ module.exports = defineConfig({
         const transactionApiUrl = process.env.VUE_APP_TRANSACTION_API_URL || `${backendUrl}/transaction`
         const gpsEnabled = process.env.VUE_APP_GPS_ENABLED || 'false'
         
+        console.log('--- VUE CONFIG BUILD LOG ---')
+        console.log('Backend URL:', backendUrl)
+        console.log('Transaction API URL:', transactionApiUrl)
+        console.log('Env Transaction Var:', process.env.VUE_APP_TRANSACTION_API_URL)
+        console.log('----------------------------')
+        
         args[0]['process.env'].VUE_APP_BACKEND_URL = JSON.stringify(backendUrl)
         args[0]['process.env'].VUE_APP_CUSTOMER_API_URL = JSON.stringify(customerApiUrl)
         args[0]['process.env'].VUE_APP_PRODUCT_API_URL = JSON.stringify(productApiUrl)
