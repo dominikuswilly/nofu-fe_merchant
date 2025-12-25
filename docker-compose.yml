@@ -5,10 +5,11 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        VUE_APP_BACKEND_URL: https://apinofudev.bengkelfajarjaya.com/api/customer
+        VUE_APP_BACKEND_URL: https://apinofudev.bengkelfajarjaya.com/api
         VUE_APP_CUSTOMER_API_URL: https://apinofudev.bengkelfajarjaya.com/api/customer
         VUE_APP_PRODUCT_API_URL: https://apinofudev.bengkelfajarjaya.com/api/product
-        NODE_ENV: development
+        VUE_APP_TRANSACTION_API_URL: https://apinofudev.bengkelfajarjaya.com/api/transaction
+        NODE_ENV: production
     image: app.netbird.cloud:8081/fe-merchant/stable:1.0.0
     ports:
       - "8080:8080"

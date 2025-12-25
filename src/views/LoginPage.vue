@@ -11,6 +11,7 @@
             type="email"
             placeholder="Masukkan username"
             required
+            autocomplete="username"
             class="input-field"
           />
         </div>
@@ -23,6 +24,7 @@
             type="password"
             placeholder="Masukkan kata sandi"
             required
+            autocomplete="current-password"
             class="input-field"
           />
         </div>
