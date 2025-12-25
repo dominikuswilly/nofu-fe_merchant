@@ -163,15 +163,20 @@ const fetchProducts = async () => {
     
     // Handle response based on the API structure
     if (response.responseCode === "200" || response.status === "success" || Array.isArray(response.data)) {
-      const rawData = response.data || response
+      // Check for stockDetail in response.data (new format) or direct array (legacy)
+      const dataObj = response.data || response || {}
+      const rawData = Array.isArray(dataObj.stockDetail) 
+        ? dataObj.stockDetail 
+        : (Array.isArray(dataObj) ? dataObj : [])
+
       if (Array.isArray(rawData)) {
         products.value = rawData.map(p => ({
           ...p,
-          id: p.id || p.id_product,
-          name: p.name || p.product_name,
-          price: p.price || p.product_price || 0,
-          stock: p.stock || p.qty || 0,
-          image: p.url || p.image || p.image_url || p.product_image || null,
+          id: p.productId || p.id || p.id_product,
+          name: p.productName || p.name || p.product_name,
+          price: p.priceSell || p.price || p.product_price || 0,
+          stock: p.qty || p.stock || 0,
+          image: p.productImage || p.url || p.image || p.image_url || p.product_image || null,
           color: p.color || getRandomColor(),
           icon: p.icon || '📦'
         }))
