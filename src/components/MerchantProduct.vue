@@ -48,7 +48,8 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { productApi } from '@/utils/api'
+import { transactionApi } from '@/utils/api'
+import { getMerchantId } from '@/utils/auth'
 
 const products = ref([])
 const loading = ref(false)
@@ -63,7 +64,19 @@ const fetchProducts = async () => {
   error.value = null
   
   try {
-    const response = await productApi.get('/products')
+    // Get merchant_id from JWT token
+    const merchantId = getMerchantId()
+    
+    if (!merchantId) {
+      error.value = 'Merchant ID tidak ditemukan. Silakan login kembali.'
+      loading.value = false
+      return
+    }
+    
+    // Call transaction stock endpoint with merchant_id
+    const response = await transactionApi.get(`/stock?merchant_id=${merchantId}`)
+    
+    console.log('Transaction API Response (Product):', response)
     
     // Based on api-usage-example.js, we expect a response structure
     if (response.responseCode === "200" || response.status === "success" || Array.isArray(response.data)) {
@@ -77,7 +90,7 @@ const fetchProducts = async () => {
           stock: p.stock || p.qty || 0,
           image: p.url || p.image || p.image_url || p.product_image || null
         }))
-        console.log('MerchantProduct: Loaded products:', products.value.length)
+        console.log('MerchantProduct: Loaded products from transaction API:', products.value.length)
         if (products.value.length > 0) {
           console.log('Sample product mapping (Product):', {
             raw: rawData[0],
@@ -94,8 +107,7 @@ const fetchProducts = async () => {
         stock: p.stock || p.qty || 0,
         image: p.url || p.image || p.image_url || p.product_image || null
       }))
-    }
- else {
+    } else {
       error.value = response.responseMessage || 'Gagal memuat data produk'
     }
   } catch (err) {
