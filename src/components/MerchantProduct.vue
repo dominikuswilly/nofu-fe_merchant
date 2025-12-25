@@ -32,7 +32,7 @@
           >
             <td>
               <div class="product-img-mini-container">
-                <img v-if="product.url || product.image || product.image_url" :src="product.url || product.image || product.image_url" class="product-img-mini" />
+                <img v-if="product.image" :src="product.image" class="product-img-mini" @error="onImageError(product)" />
                 <div v-else class="img-placeholder-mini">📦</div>
               </div>
             </td>
@@ -54,6 +54,10 @@ const products = ref([])
 const loading = ref(false)
 const error = ref(null)
 
+const onImageError = (product) => {
+  console.error('MerchantProduct: Image load error:', product.name, 'URL:', product.image)
+}
+
 const fetchProducts = async () => {
   loading.value = true
   error.value = null
@@ -63,15 +67,24 @@ const fetchProducts = async () => {
     
     // Based on api-usage-example.js, we expect a response structure
     if (response.responseCode === "200" || response.status === "success" || Array.isArray(response.data)) {
-      products.value = (response.data || response).map(p => ({
-        ...p,
-        id: p.id || p.id_product,
-        name: p.name || p.product_name,
-        price: p.price || p.product_price || 0,
-        stock: p.stock || p.qty || 0,
-        image: p.url || p.image || p.image_url || p.product_image || null
-      }))
-      console.log('MerchantProduct: Loaded products with images:', products.value.filter(p => p.image))
+      const rawData = response.data || response
+      if (Array.isArray(rawData)) {
+        products.value = rawData.map(p => ({
+          ...p,
+          id: p.id || p.id_product,
+          name: p.name || p.product_name,
+          price: p.price || p.product_price || 0,
+          stock: p.stock || p.qty || 0,
+          image: p.url || p.image || p.image_url || p.product_image || null
+        }))
+        console.log('MerchantProduct: Loaded products:', products.value.length)
+        if (products.value.length > 0) {
+          console.log('Sample product mapping (Product):', {
+            raw: rawData[0],
+            mapped: products.value[0]
+          })
+        }
+      }
     } else if (Array.isArray(response)) {
       products.value = response.map(p => ({
         ...p,
