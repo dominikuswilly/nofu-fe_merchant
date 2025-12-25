@@ -17,6 +17,7 @@ COPY . .
 ARG VUE_APP_BACKEND_URL=https://apinofudev.bengkelfajarjaya.com/api
 ARG VUE_APP_CUSTOMER_API_URL=https://apinofudev.bengkelfajarjaya.com/api/customer
 ARG VUE_APP_PRODUCT_API_URL=https://apinofudev.bengkelfajarjaya.com/api/product
+ARG VUE_APP_TRANSACTION_API_URL=https://apinofudev.bengkelfajarjaya.com/api/transaction
 
 ARG NODE_ENV=production
 

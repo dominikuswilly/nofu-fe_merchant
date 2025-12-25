@@ -8,6 +8,7 @@ import { getEnv } from './config'
 const BASE_URL = getEnv('VUE_APP_BACKEND_URL') || ''
 const CUSTOMER_BASE_URL = getEnv('VUE_APP_CUSTOMER_API_URL') || `${BASE_URL}/customer`
 const PRODUCT_BASE_URL = getEnv('VUE_APP_PRODUCT_API_URL') || `${BASE_URL}/product`
+const TRANSACTION_BASE_URL = getEnv('VUE_APP_TRANSACTION_API_URL') || `${BASE_URL}/transaction`
 
 /**
  * Make an authenticated API request
@@ -85,6 +86,7 @@ const createService = (baseUrl) => ({
 
 export const customerApi = createService(CUSTOMER_BASE_URL)
 export const productApi = createService(PRODUCT_BASE_URL)
+export const transactionApi = createService(TRANSACTION_BASE_URL)
 
 /**
  * Default exports for backward compatibility (using BASE_URL)

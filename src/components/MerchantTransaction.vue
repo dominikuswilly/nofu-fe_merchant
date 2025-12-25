@@ -131,7 +131,8 @@
 
 <script setup>
 import { ref, computed, nextTick, onMounted } from 'vue'
-import { productApi } from '@/utils/api'
+import { transactionApi } from '@/utils/api'
+import { getMerchantId } from '@/utils/auth'
 
 const products = ref([])
 const loading = ref(false)
@@ -142,11 +143,25 @@ const fetchProducts = async () => {
   error.value = null
   
   try {
-    const response = await productApi.get('/products')
+    // Get merchant_id from JWT token
+    const merchantId = getMerchantId()
     
+    if (!merchantId) {
+      error.value = 'Merchant ID tidak ditemukan. Silakan login kembali.'
+      loading.value = false
+      return
+    }
+    
+    // Call transaction stock endpoint with merchant_id
+    const response = await transactionApi.get(`/stock?merchant_id=${merchantId}`)
+    
+    console.log('Transaction API Response:', response)
+    
+    // Handle response based on the API structure
     if (response.responseCode === "200" || response.status === "success" || Array.isArray(response.data)) {
-      products.value = (response.data || response).map(p => ({
-        id: p.id || p.id_product,
+      const data = response.data || response
+      products.value = (Array.isArray(data) ? data : []).map(p => ({
+        id: p.id || p.id_product || p.product_id,
         name: p.name || p.product_name,
         price: p.price || p.product_price || 0,
         stock: p.stock || p.qty || 0,
@@ -154,10 +169,10 @@ const fetchProducts = async () => {
         color: p.color || getRandomColor(),
         icon: p.icon || '📦'
       }))
-      console.log('MerchantTransaction: Loaded products with images:', products.value.filter(p => p.image))
+      console.log('MerchantTransaction: Loaded products from transaction API:', products.value.length)
     } else if (Array.isArray(response)) {
       products.value = response.map(p => ({
-        id: p.id || p.id_product,
+        id: p.id || p.id_product || p.product_id,
         name: p.name || p.product_name,
         price: p.price || p.product_price || 0,
         stock: p.stock || p.qty || 0,
