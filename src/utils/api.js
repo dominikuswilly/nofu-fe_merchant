@@ -10,6 +10,14 @@ const CUSTOMER_BASE_URL = getEnv('VUE_APP_CUSTOMER_API_URL') || `${BASE_URL}/cus
 const PRODUCT_BASE_URL = getEnv('VUE_APP_PRODUCT_API_URL') || `${BASE_URL}/product`
 const TRANSACTION_BASE_URL = getEnv('VUE_APP_TRANSACTION_API_URL') || `${BASE_URL}/transaction`
 
+// Debug logging to verify URLs
+console.log('API Configuration:', {
+  BASE_URL,
+  CUSTOMER_BASE_URL,
+  PRODUCT_BASE_URL,
+  TRANSACTION_BASE_URL
+})
+
 /**
  * Make an authenticated API request
  * @param {string} endpoint - API endpoint (without base URL)
