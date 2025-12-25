@@ -27,11 +27,23 @@ module.exports = defineConfig({
       webSocketURL: 'auto://0.0.0.0:0/ws',
     },
     proxy: {
-      '/api/customer': {  // Proxy any /api/* calls
-        target: 'https://apinofudev.bengkelfajarjaya.com',  // Your backend URL
-        changeOrigin: true,  // Changes the origin of the host header to the target URL
-        secure: false,  // For HTTP backends; set true for HTTPS
-        logLevel: 'debug',  // Shows proxy logs in console
+      '/api/customer': {
+        target: 'https://apinofudev.bengkelfajarjaya.com',
+        changeOrigin: true,
+        secure: false,
+        logLevel: 'debug',
+      },
+      '/api/product': {
+        target: 'https://apinofudev.bengkelfajarjaya.com',
+        changeOrigin: true,
+        secure: false,
+        logLevel: 'debug',
+      },
+      '/api/transaction': {
+        target: 'https://apinofudev.bengkelfajarjaya.com',
+        changeOrigin: true,
+        secure: false,
+        logLevel: 'debug',
       },
     },
   },
