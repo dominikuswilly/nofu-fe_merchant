@@ -18,7 +18,6 @@
       <table class="product-table">
         <thead>
           <tr>
-            <th>Gambar</th>
             <th>Nama Produk</th>
             <th class="text-right">Stok</th>
             <th class="text-right">Harga</th>
@@ -30,12 +29,6 @@
             :key="product.id || product.id_product"
             :class="{ 'low-stock': (product.stock || product.qty) < 50 }"
           >
-            <td>
-              <div class="product-img-mini-container">
-                <img v-if="product.image" :src="product.image" class="product-img-mini" @error="onImageError(product)" />
-                <div v-else class="img-placeholder-mini">📦</div>
-              </div>
-            </td>
             <td>{{ product.name || product.product_name }}</td>
             <td class="text-right">{{ product.stock || product.qty || 0 }}</td>
             <td class="text-right">{{ formatCurrency(product.price || product.product_price || 0) }}</td>
@@ -54,10 +47,6 @@ import { getMerchantId } from '@/utils/auth'
 const products = ref([])
 const loading = ref(false)
 const error = ref(null)
-
-const onImageError = (product) => {
-  console.error('MerchantProduct: Image load error:', product.name, 'URL:', product.image)
-}
 
 const fetchProducts = async () => {
   loading.value = true
