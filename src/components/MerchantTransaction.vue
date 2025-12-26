@@ -176,6 +176,7 @@ const fetchProducts = async () => {
         products.value = rawData.map(p => ({
           ...p,
           id: p.productId || p.id || p.id_product,
+          stockId: p.id, // Store original stock ID
           name: p.productName || p.name || p.product_name,
           price: p.priceSell || p.price || p.product_price || 0,
           stock: p.qty || p.stock || 0,
