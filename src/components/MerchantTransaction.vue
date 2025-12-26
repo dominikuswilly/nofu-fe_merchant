@@ -304,13 +304,16 @@ const proceedToPayment = () => {
 const finishTransaction = async () => {
   submitting.value = true
   try {
-    const salesDetails = cartItems.value.map(item => ({
-      productId: String(item.id),
-      qty: item.qty,
-      price: item.price,
-      currency: "IDR",
-      stockId: item.stockId || item.stock_id // Try both common casing
-    }))
+    const salesDetails = cartItems.value.map(item => {
+      const price = parseFloat(item.price)
+      return {
+        productId: String(item.id),
+        qty: item.qty,
+        price: Number.isNaN(price) ? 0 : price,  // Fallback to 0
+        currency: "IDR",
+        stockId: item.stockId || item.stock_id
+      }
+    })
 
     const payload = {
       salesDetails
