@@ -105,7 +105,9 @@
         <p class="qr-amount">Total: {{ formatCurrency(totalPrice) }}</p>
         <div class="action-buttons">
           <button class="confirm-btn cancel" @click="cancelTransaction">Batalkan</button>
-          <button class="confirm-btn success" @click="finishTransaction">Selesai</button>
+          <button class="confirm-btn success" @click="finishTransaction" :disabled="submitting">
+            {{ submitting ? 'Menyimpan...' : 'Selesai' }}
+          </button>
         </div>
       </div>
     </div>
@@ -136,6 +138,7 @@ import { getMerchantId } from '@/utils/auth'
 
 const products = ref([])
 const loading = ref(false)
+const submitting = ref(false)
 const error = ref(null)
 
 const onImageError = (product) => {
@@ -298,10 +301,40 @@ const proceedToPayment = () => {
   showQR.value = true
 }
 
-const finishTransaction = () => {
-  showQR.value = false
-  cart.value = {}
-  alert('Transaksi sudah disimpan')
+const finishTransaction = async () => {
+  submitting.value = true
+  try {
+    const salesDetails = cartItems.value.map(item => ({
+      productId: String(item.id),
+      qty: item.qty,
+      price: item.price,
+      currency: "IDR",
+      stockId: item.stockId || item.stock_id // Try both common casing
+    }))
+
+    const payload = {
+      salesDetails
+    }
+
+    const response = await transactionApi.post('/sales/create', payload)
+    
+    // 2xx response (api.js throws if not ok, but let's check response code if present)
+    if (response) {
+      showQR.value = false
+      cart.value = {}
+      alert('Transaksi sudah disimpan')
+    }
+  } catch (err) {
+    console.error('Transaction error:', err)
+    const retry = confirm(`Gagal menyimpan transaksi: ${err.message}\n\nCoba lagi?`)
+    if (retry) {
+      finishTransaction()
+    } else {
+      // User cancelled retry, stay in modal?
+    }
+  } finally {
+    submitting.value = false
+  }
 }
 
 const cancelTransaction = () => {
