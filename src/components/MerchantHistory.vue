@@ -13,6 +13,7 @@
     </div>
 
     <div class="history-table-container">
+      <p>DUMMY DATA</p>
       <table class="history-table">
         <thead>
           <tr>

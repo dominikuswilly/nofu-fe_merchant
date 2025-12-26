@@ -2,6 +2,7 @@
   <div class="merchant-restock">
     <div class="form-section">
       <h3>Permintaan Restock</h3>
+      <p>DUMMY DATA</p>
       <form @submit.prevent="submitRequest" class="restock-form">
         <div class="form-group">
           <label for="product">Pilih Produk</label>

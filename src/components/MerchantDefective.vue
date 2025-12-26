@@ -2,6 +2,7 @@
   <div class="merchant-defective">
     <div class="form-section">
       <h3>Catat Produk Rusak</h3>
+      <p>DUMMY DATA</p>
       <form @submit.prevent="submitDefective" class="defective-form">
         <div class="form-group">
           <label for="product">Pilih Produk</label>

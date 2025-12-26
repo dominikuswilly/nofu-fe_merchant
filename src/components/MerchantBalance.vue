@@ -36,6 +36,10 @@
     <div class="activity-hint">
       <p>Lihat <a href="#" @click.prevent="$emit('viewHistory')">Riwayat Transaksi</a> untuk detail lengkap.</p>
     </div>
+
+    <div class="activity-hint">
+      <p>DUMMY DATA</p>
+    </div>
   </div>
 </template>
 
