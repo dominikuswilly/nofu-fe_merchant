@@ -19,7 +19,7 @@
         v-for="product in products" 
         :key="product.id"
         class="product-card"
-        :class="{ 'low-stock-limit': product.stock < 50 }"
+        :class="{ 'low-stock-limit': product.stock < 10 }"
         @click="increment(product)"
       >
         <div class="product-image-placeholder" :style="{ backgroundColor: product.color }">

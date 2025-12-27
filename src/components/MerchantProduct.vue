@@ -27,7 +27,7 @@
           <tr 
             v-for="product in products" 
             :key="product.id || product.id_product"
-            :class="{ 'low-stock': (product.stock || product.qty) < 50 }"
+            :class="{ 'low-stock': (product.stock || product.qty) < 10 }"
           >
             <td>{{ product.name || product.product_name }}</td>
             <td class="text-right">{{ product.stock || product.qty || 0 }}</td>
