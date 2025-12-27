@@ -2,7 +2,6 @@
   <div class="merchant-restock">
     <div class="form-section">
       <h3>Permintaan Restock</h3>
-      <p>DUMMY DATA</p>
       
       <!-- Input Form -->
       <div class="restock-form">

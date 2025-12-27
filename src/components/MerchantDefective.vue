@@ -2,7 +2,6 @@
   <div class="merchant-defective">
     <div class="form-section">
       <h3>Catat Produk Rusak</h3>
-      <p>DUMMY DATA</p>
       <form @submit.prevent="submitDefective" class="defective-form">
         <div class="form-group">
           <label for="product">Pilih Produk</label>
@@ -80,17 +79,14 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { transactionApi } from '@/utils/api'
+import { getMerchantId } from '@/utils/auth'
 
-// Mock products data (same as MerchantProduct)
-const products = ref([
-  { id: 1, name: 'Kopi Susu Gula Aren', stock: 120, price: 18000 },
-  { id: 2, name: 'Croissant Butter', stock: 30, price: 25000 },
-  { id: 3, name: 'Americano Hot', stock: 8, price: 15000 },
-  { id: 4, name: 'Matcha Latte', stock: 75, price: 22000 },
-  { id: 5, name: 'Sandwich Tuna', stock: 45, price: 30000 },
-  { id: 6, name: 'Mineral Water', stock: 200, price: 5000 }
-])
+// Products data
+const products = ref([])
+const isLoading = ref(false)
+const error = ref(null)
 
 const form = ref({
   productId: '',
@@ -101,9 +97,39 @@ const form = ref({
 
 const defectiveHistory = ref([])
 
+const fetchProducts = async () => {
+  isLoading.value = true
+  error.value = null
+  try {
+    const merchantId = getMerchantId()
+    if (!merchantId) {
+      throw new Error('Merchant ID not found')
+    }
+    
+    const response = await transactionApi.get(`/stock?merchant_id=${merchantId}`)
+    if (response && response.data && response.data.stockDetail) {
+      products.value = response.data.stockDetail.map(item => ({
+        id: item.productId,
+        name: item.productName,
+        stock: item.qty,
+        price: parseFloat(item.priceSell || 0)
+      }))
+    }
+  } catch (err) {
+    console.error('Failed to fetch products:', err)
+    error.value = 'Gagal memuat data produk'
+  } finally {
+    isLoading.value = false
+  }
+}
+
+onMounted(() => {
+  fetchProducts()
+})
+
 const selectedProductStock = computed(() => {
   if (!form.value.productId) return 0
-  const product = products.value.find(p => p.id === parseInt(form.value.productId))
+  const product = products.value.find(p => p.id === form.value.productId)
   return product ? product.stock : 0
 })
 
@@ -115,7 +141,7 @@ const canSubmit = computed(() => {
 })
 
 const submitDefective = () => {
-  const product = products.value.find(p => p.id === parseInt(form.value.productId))
+  const product = products.value.find(p => p.id === form.value.productId)
   
   if (!product) return
 
