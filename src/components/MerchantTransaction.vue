@@ -175,8 +175,9 @@ const fetchProducts = async () => {
       if (Array.isArray(rawData)) {
         products.value = rawData.map(p => ({
           ...p,
-          id: p.productId || p.id || p.id_product,
-          stockId: p.id, // Store original stock ID
+          id: p.id,
+          stockDetailId: p.id,
+          productId: p.productId,
           name: p.productName || p.name || p.product_name,
           price: p.priceSell || p.price || p.product_price || 0,
           stock: p.qty || p.stock || 0,
@@ -308,11 +309,11 @@ const finishTransaction = async () => {
     const salesDetails = cartItems.value.map(item => {
       const price = parseFloat(item.price)
       return {
-        productId: String(item.id),
+        productId: String(item.productId),
         qty: item.qty,
         price: Number.isNaN(price) ? 0 : price,  // Fallback to 0
         currency: "IDR",
-        stockId: item.stockId || item.stock_id
+        stockDetailId: item.stockDetailId
       }
     })
 
