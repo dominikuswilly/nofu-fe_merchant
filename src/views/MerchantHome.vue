@@ -1,6 +1,11 @@
 <template>
   <div class="merchant-home">
-    <MerchantHeader @logout="handleLogout" @checkIn="handleCheckIn" @toTransaction="activeTab = 'transaction'" />
+    <MerchantHeader 
+      @logout="handleLogout" 
+      @checkIn="handleCheckIn" 
+      @toTransaction="activeTab = 'transaction'" 
+      :isCheckingIn="isCheckingIn"
+    />
     
     <main class="content-area">
       <div v-if="activeTab === 'transaction'" class="tab-content">
@@ -97,16 +102,21 @@ const handleLogout = () => {
 }
 
 
+const isCheckingIn = ref(false)
+
 const handleCheckIn = () => {
-  if (gpsAllowed.value) {
+  if (gpsAllowed.value && !isCheckingIn.value) {
+    isCheckingIn.value = true
     // If we are here, GPS permission is likely granted, but double check logic
     navigator.geolocation.getCurrentPosition(
       (position) => {
+        isCheckingIn.value = false
         const { latitude, longitude } = position.coords
         const time = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
         alert(`Check-in berhasil pada pukul ${time}\nLokasi: ${latitude}, ${longitude}`)
       },
       (error) => {
+        isCheckingIn.value = false
         console.error(error)
         alert('Gagal mengambil lokasi saat ini.')
       },

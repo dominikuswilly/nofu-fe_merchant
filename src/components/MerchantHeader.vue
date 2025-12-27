@@ -12,7 +12,14 @@
               <p class="username">@{{ merchant.username || "username" }}</p>
             </div>
             <div class="divider"></div>
-            <div class="menu-item" @click="$emit('checkIn')">📍 Check-in</div>
+            <div 
+              class="menu-item" 
+              :class="{ 'disabled': isCheckingIn }"
+              @click="!isCheckingIn && $emit('checkIn')"
+            >
+              <span v-if="isCheckingIn">⏳ Memproses...</span>
+              <span v-else>📍 Check-in</span>
+            </div>
             <div class="menu-item logout" @click="$emit('logout')">
               🚪 Keluar
             </div>
@@ -24,7 +31,11 @@
 </template>
 
 <script setup>
-import { ref, defineEmits, onMounted } from "vue";
+import { ref, defineProps, defineEmits, onMounted } from "vue";
+
+defineProps({
+  isCheckingIn: Boolean
+});
 
 defineEmits(["logout", "checkIn", "toTransaction"]);
 
@@ -138,6 +149,12 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.menu-item.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 .menu-item:hover {
