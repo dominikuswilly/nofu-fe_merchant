@@ -497,4 +497,31 @@ const formatDate = (dateString) => {
   padding-top: 8px;
   border-top: 1px solid #e2e8f0;
 }
+
+@media (max-width: 640px) {
+  .form-row {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .product-group, .quantity-group {
+    width: 100%;
+  }
+
+  .add-btn {
+    width: 100%;
+    align-self: stretch;
+    display: flex;
+    justify-content: center;
+    margin-top: 8px;
+  }
+
+  .form-section, .requests-section {
+    padding: 16px;
+  }
+
+  .detail-row .label {
+    min-width: 70px;
+  }
+}
 </style>
