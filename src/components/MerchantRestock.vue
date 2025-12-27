@@ -118,17 +118,14 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { transactionApi } from '@/utils/api'
+import { getMerchantId } from '@/utils/auth'
 
-// Mock products data
-const products = ref([
-  { id: 1, name: 'Kopi Susu Gula Aren', stock: 120, price: 18000 },
-  { id: 2, name: 'Croissant Butter', stock: 30, price: 25000 },
-  { id: 3, name: 'Americano Hot', stock: 8, price: 15000 },
-  { id: 4, name: 'Matcha Latte', stock: 75, price: 22000 },
-  { id: 5, name: 'Sandwich Tuna', stock: 45, price: 30000 },
-  { id: 6, name: 'Mineral Water', stock: 200, price: 5000 }
-])
+// Products data
+const products = ref([])
+const isLoading = ref(false)
+const error = ref(null)
 
 const form = ref({
   productId: '',
@@ -140,12 +137,43 @@ const form = ref({
 const cart = ref([])
 const restockRequests = ref([])
 
+const fetchProducts = async () => {
+  isLoading.value = true
+  error.value = null
+  try {
+    const merchantId = getMerchantId()
+    if (!merchantId) {
+      throw new Error('Merchant ID not found')
+    }
+    
+    const response = await transactionApi.get(`/stock?merchant_id=${merchantId}`)
+    if (response && response.data && response.data.stockDetail) {
+      products.value = response.data.stockDetail.map(item => ({
+        id: item.productId,
+        name: item.productName,
+        stock: item.qty,
+        price: parseFloat(item.priceSell || 0)
+      }))
+    }
+  } catch (err) {
+    console.error('Failed to fetch products:', err)
+    error.value = 'Gagal memuat data produk'
+  } finally {
+    isLoading.value = false
+  }
+}
+
+onMounted(() => {
+  fetchProducts()
+})
+
 const canAdd = computed(() => {
   return form.value.productId && form.value.quantity && form.value.quantity > 0
 })
 
 const addToCart = () => {
-  const product = products.value.find(p => p.id === parseInt(form.value.productId))
+  // form.value.productId is now the string UUID from API
+  const product = products.value.find(p => p.id === form.value.productId)
   if (!product) return
 
   cart.value.push({
