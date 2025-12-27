@@ -3,32 +3,35 @@
     <div class="form-section">
       <h3>Permintaan Restock</h3>
       <p>DUMMY DATA</p>
-      <form @submit.prevent="submitRequest" class="restock-form">
-        <div class="form-group">
-          <label for="product">Pilih Produk</label>
-          <select id="product" v-model="form.productId" required class="input-field">
-            <option value="">-- Pilih Produk --</option>
-            <option v-for="product in products" :key="product.id" :value="product.id">
-              {{ product.name }} (Stok: {{ product.stock }})
-            </option>
-          </select>
+      
+      <!-- Input Form -->
+      <div class="restock-form">
+        <div class="form-row">
+          <div class="form-group product-group">
+            <label for="product">Pilih Produk</label>
+            <select id="product" v-model="form.productId" class="input-field">
+              <option value="">-- Pilih Produk --</option>
+              <option v-for="product in products" :key="product.id" :value="product.id">
+                {{ product.name }} (Stok: {{ product.stock }})
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group quantity-group">
+            <label for="quantity">Jumlah</label>
+            <input 
+              id="quantity" 
+              v-model.number="form.quantity" 
+              type="number" 
+              min="1" 
+              class="input-field"
+              placeholder="Qty"
+            />
+          </div>
         </div>
 
         <div class="form-group">
-          <label for="quantity">Jumlah Permintaan</label>
-          <input 
-            id="quantity" 
-            v-model.number="form.quantity" 
-            type="number" 
-            min="1" 
-            required 
-            class="input-field"
-            placeholder="Masukkan jumlah"
-          />
-        </div>
-
-        <div class="form-group">
-          <label for="priority">Prioritas</label>
+          <label for="priority">Prioritas Item</label>
           <select id="priority" v-model="form.priority" class="input-field">
             <option value="normal">Normal</option>
             <option value="urgent">Mendesak</option>
@@ -36,20 +39,46 @@
         </div>
 
         <div class="form-group">
-          <label for="notes">Catatan (Opsional)</label>
-          <textarea 
+          <label for="notes">Catatan per Item (Opsional)</label>
+          <input 
             id="notes" 
             v-model="form.notes" 
+            type="text"
             class="input-field"
-            rows="3"
-            placeholder="Alasan atau catatan tambahan..."
-          ></textarea>
+            placeholder="Catatan..."
+          />
         </div>
 
-        <button type="submit" class="submit-btn" :disabled="!canSubmit">
-          Kirim Permintaan
+        <button @click="addToCart" class="add-btn" :disabled="!canAdd">
+          + Tambah ke Daftar
         </button>
-      </form>
+      </div>
+
+      <!-- Draft List (Cart) -->
+      <div v-if="cart.length > 0" class="cart-section">
+        <h4>Daftar Permintaan ({{ cart.length }} Item)</h4>
+        <div class="cart-list">
+          <div v-for="(item, index) in cart" :key="index" class="cart-item">
+            <div class="cart-item-info">
+              <span class="cart-product">{{ item.productName }}</span>
+              <span class="cart-details">
+                {{ item.quantity }} pcs 
+                <span v-if="item.priority === 'urgent'" class="badge-urgent">Urgent</span>
+              </span>
+              <span v-if="item.notes" class="cart-notes">{{ item.notes }}</span>
+            </div>
+            <button @click="removeFromCart(index)" class="remove-btn" title="Hapus">
+              ✕
+            </button>
+          </div>
+        </div>
+        
+        <div class="cart-actions">
+          <button @click="submitCart" class="submit-btn full-width">
+            Kirim {{ cart.length }} Permintaan
+          </button>
+        </div>
+      </div>
     </div>
 
     <div class="requests-section">
@@ -108,38 +137,54 @@ const form = ref({
   notes: ''
 })
 
+const cart = ref([])
 const restockRequests = ref([])
 
-const canSubmit = computed(() => {
+const canAdd = computed(() => {
   return form.value.productId && form.value.quantity && form.value.quantity > 0
 })
 
-const submitRequest = () => {
+const addToCart = () => {
   const product = products.value.find(p => p.id === parseInt(form.value.productId))
-  
   if (!product) return
 
-  // Add to requests
-  restockRequests.value.unshift({
-    id: Date.now(),
+  cart.value.push({
+    productId: product.id,
     productName: product.name,
     quantity: form.value.quantity,
     priority: form.value.priority,
-    notes: form.value.notes,
-    status: 'pending', // pending, approved, rejected
-    date: new Date().toISOString()
+    notes: form.value.notes
   })
 
-  // Show success message
-  alert(`Permintaan restock ${form.value.quantity} ${product.name} berhasil dikirim ke admin`)
+  // Reset form partialy
+  form.value.productId = ''
+  form.value.quantity = null
+  form.value.notes = ''
+  // keep priority
+}
 
-  // Reset form
-  form.value = {
-    productId: '',
-    quantity: null,
-    priority: 'normal',
-    notes: ''
-  }
+const removeFromCart = (index) => {
+  cart.value.splice(index, 1)
+}
+
+const submitCart = () => {
+  if (cart.value.length === 0) return
+
+  // Mock API call simulation - batch process
+  const newRequests = cart.value.map(item => ({
+    id: Date.now() + Math.random(),
+    productName: item.productName,
+    quantity: item.quantity,
+    priority: item.priority,
+    notes: item.notes,
+    status: 'pending',
+    date: new Date().toISOString()
+  }))
+
+  restockRequests.value.unshift(...newRequests)
+
+  alert(`${cart.value.length} permintaan restock berhasil dikirim ke admin`)
+  cart.value = []
 }
 
 const getStatusLabel = (status) => {
@@ -186,11 +231,27 @@ const formatDate = (dateString) => {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  border-bottom: 1px solid #edf2f7;
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+}
+
+.form-row {
+  display: flex;
+  gap: 16px;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
+}
+
+.product-group {
+  flex: 2;
+}
+
+.quantity-group {
+  flex: 1;
 }
 
 .form-group label {
@@ -214,6 +275,95 @@ const formatDate = (dateString) => {
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
+.add-btn {
+  background-color: #48bb78;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  align-self: flex-start;
+  transition: background-color 0.2s;
+}
+
+.add-btn:hover:not(:disabled) {
+  background-color: #38a169;
+}
+
+.add-btn:disabled {
+  background-color: #cbd5e0;
+  cursor: not-allowed;
+}
+
+/* Cart Styles */
+.cart-section h4 {
+  margin: 0 0 12px 0;
+  color: #4a5568;
+  font-size: 1em;
+}
+
+.cart-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.cart-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f7fafc;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.cart-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cart-product {
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.cart-details {
+  font-size: 0.85em;
+  color: #718096;
+}
+
+.badge-urgent {
+  background-color: #fed7d7;
+  color: #c53030;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  margin-left: 6px;
+}
+
+.cart-notes {
+  font-size: 0.8em;
+  color: #718096;
+  font-style: italic;
+}
+
+.remove-btn {
+  background: none;
+  border: none;
+  font-size: 1.2em;
+  color: #cbd5e0;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.remove-btn:hover {
+  color: #fc8181;
+}
+
 .submit-btn {
   background-color: #667eea;
   color: white;
@@ -225,15 +375,15 @@ const formatDate = (dateString) => {
   transition: background-color 0.2s;
 }
 
-.submit-btn:hover:not(:disabled) {
+.submit-btn.full-width {
+  width: 100%;
+}
+
+.submit-btn:hover {
   background-color: #5a67d8;
 }
 
-.submit-btn:disabled {
-  background-color: #cbd5e0;
-  cursor: not-allowed;
-}
-
+/* Requests List (Existing) */
 .requests-section {
   background: white;
   border-radius: 12px;
