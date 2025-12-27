@@ -13,8 +13,17 @@
     </div>
 
     <div class="history-table-container">
-      <p>DUMMY DATA</p>
-      <table class="history-table">
+      <div v-if="isLoading" class="state-message">
+        <div class="loader"></div>
+        <p>Memuat riwayat...</p>
+      </div>
+
+      <div v-else-if="error" class="state-message error">
+        <p>{{ error }}</p>
+        <button @click="fetchHistory" class="retry-btn">Coba Lagi</button>
+      </div>
+
+      <table v-else class="history-table">
         <thead>
           <tr>
             <th>Nama Produk</th>
@@ -59,9 +68,14 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { transactionApi } from '@/utils/api'
+import { getMerchantId } from '@/utils/auth'
 
 const currentFilter = ref('today')
+const historyData = ref([])
+const isLoading = ref(false)
+const error = ref(null)
 const expandedIds = ref(new Set())
 
 const filters = [
@@ -70,35 +84,46 @@ const filters = [
   { label: 'Bulan Ini', value: 'month' }
 ]
 
-// Mock Data
-const mockData = {
-  today: [
-    { id: 1, productName: 'Kopi Susu Gula Aren', totalQty: 15, times: ['08:30', '10:15', '13:45'] },
-    { id: 2, productName: 'Croissant Butter', totalQty: 8, times: ['09:00', '11:20'] },
-    { id: 3, productName: 'Americano Hot', totalQty: 12, times: ['08:00', '08:45', '14:00', '16:30'] }
-  ],
-  week: [
-    { id: 101, productName: 'Kopi Susu Gula Aren', totalQty: 85 },
-    { id: 102, productName: 'Croissant Butter', totalQty: 40 },
-    { id: 103, productName: 'Americano Hot', totalQty: 60 },
-    { id: 104, productName: 'Matcha Latte', totalQty: 25 }
-  ],
-  month: [
-    { id: 201, productName: 'Kopi Susu Gula Aren', totalQty: 350 },
-    { id: 202, productName: 'Croissant Butter', totalQty: 180 },
-    { id: 203, productName: 'Americano Hot', totalQty: 240 },
-    { id: 204, productName: 'Matcha Latte', totalQty: 110 },
-    { id: 205, productName: 'Sandwich Tuna', totalQty: 90 }
-  ]
+const fetchHistory = async () => {
+  isLoading.value = true
+  error.value = null
+  try {
+    const merchantId = getMerchantId()
+    if (!merchantId) {
+      error.value = 'Merchant ID tidak ditemukan. Silakan login kembali.'
+      return
+    }
+
+    const response = await transactionApi.get(`/sales/history?time=${currentFilter.value}`)
+    
+    if (response && (response.responseCode === '200' || response.status === 'success')) {
+      const data = response.data?.salesDetail || []
+      // Map API data to component structure
+      historyData.value = data.map((item, index) => ({
+        id: item.productId || index,
+        productName: item.productName || 'Produk Tidak Diketahui',
+        totalQty: item.totalQty || item.qty || 0,
+        times: Array.isArray(item.times) ? item.times : []
+      }))
+    } else {
+      error.value = response?.responseMessage || 'Gagal memuat riwayat penjualan'
+    }
+  } catch (err) {
+    console.error('Failed to fetch history:', err)
+    error.value = 'Terjadi kesalahan saat memuat data riwayat'
+  } finally {
+    isLoading.value = false
+  }
 }
 
 const filteredData = computed(() => {
-  return mockData[currentFilter.value] || []
+  return historyData.value
 })
 
 const switchFilter = (val) => {
   currentFilter.value = val
   expandedIds.value.clear()
+  fetchHistory()
 }
 
 const toggleExpand = (id) => {
@@ -112,6 +137,10 @@ const toggleExpand = (id) => {
 }
 
 const isExpanded = (id) => expandedIds.value.has(id)
+
+onMounted(() => {
+  fetchHistory()
+})
 </script>
 
 <style scoped>
@@ -237,5 +266,48 @@ const isExpanded = (id) => expandedIds.value.has(id)
   text-align: center;
   padding: 30px;
   color: #a0aec0;
+}
+
+.state-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: #718096;
+}
+
+.state-message.error {
+  color: #e53e3e;
+}
+
+.loader {
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #667eea;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 12px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.retry-btn {
+  margin-top: 12px;
+  padding: 6px 16px;
+  background-color: #667eea;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9em;
+}
+
+.retry-btn:hover {
+  background-color: #5a67d8;
 }
 </style>
