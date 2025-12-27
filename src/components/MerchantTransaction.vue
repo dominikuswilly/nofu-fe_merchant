@@ -328,6 +328,7 @@ const finishTransaction = async () => {
       showQR.value = false
       cart.value = {}
       alert('Transaksi sudah disimpan')
+      await fetchProducts()
     }
   } catch (err) {
     console.error('Transaction error:', err)
