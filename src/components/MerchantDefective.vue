@@ -51,7 +51,7 @@
         </div>
 
         <button type="submit" class="submit-btn" :disabled="!canSubmit">
-          Catat Produk Rusak
+          {{ isSubmitting ? 'Menyimpan...' : 'Catat Produk Rusak' }}
         </button>
       </form>
     </div>
@@ -86,6 +86,7 @@ import { getMerchantId } from '@/utils/auth'
 // Products data
 const products = ref([])
 const isLoading = ref(false)
+const isSubmitting = ref(false)
 const error = ref(null)
 
 const form = ref({
@@ -110,9 +111,12 @@ const fetchProducts = async () => {
     if (response && response.data && response.data.stockDetail) {
       products.value = response.data.stockDetail.map(item => ({
         id: item.productId,
+        stockDetailId: item.id,
+        productId: item.productId,
         name: item.productName,
         stock: item.qty,
-        price: parseFloat(item.priceSell || 0)
+        price: parseFloat(item.priceSell || 0),
+        currency: item.currency || 'IDR'
       }))
     }
   } catch (err) {
@@ -137,36 +141,61 @@ const canSubmit = computed(() => {
   return form.value.productId && 
          form.value.quantity && 
          form.value.quantity > 0 && 
-         form.value.quantity <= selectedProductStock.value
+         form.value.quantity <= selectedProductStock.value &&
+         !isSubmitting.value
 })
 
-const submitDefective = () => {
+const submitDefective = async () => {
   const product = products.value.find(p => p.id === form.value.productId)
   
   if (!product) return
 
-  // Add to history
-  defectiveHistory.value.unshift({
-    id: Date.now(),
-    productName: product.name,
-    quantity: form.value.quantity,
-    reason: form.value.reason || 'Tidak disebutkan',
-    notes: form.value.notes,
-    date: new Date().toISOString()
-  })
+  isSubmitting.value = true
+  try {
+    const payload = {
+      defectDetails: [
+        {
+          productId: product.productId,
+          qty: form.value.quantity,
+          price: product.price,
+          currency: product.currency,
+          stockDetailId: product.stockDetailId
+        }
+      ]
+    }
 
-  // Deduct from stock
-  product.stock -= form.value.quantity
+    const response = await transactionApi.post('/sales/defect/create', payload)
+    
+    if (response) {
+      // Add to local history for immediate UI feedback
+      defectiveHistory.value.unshift({
+        id: Date.now(),
+        productName: product.name,
+        quantity: form.value.quantity,
+        reason: form.value.reason || 'Tidak disebutkan',
+        notes: form.value.notes,
+        date: new Date().toISOString()
+      })
 
-  // Show success message
-  alert(`Berhasil mencatat ${form.value.quantity} ${product.name} sebagai produk rusak`)
+      // Show success message
+      alert(`Berhasil mencatat ${form.value.quantity} ${product.name} sebagai produk rusak`)
 
-  // Reset form
-  form.value = {
-    productId: '',
-    quantity: null,
-    reason: '',
-    notes: ''
+      // Reset form
+      form.value = {
+        productId: '',
+        quantity: null,
+        reason: '',
+        notes: ''
+      }
+
+      // Refresh products to get updated stock
+      await fetchProducts()
+    }
+  } catch (err) {
+    console.error('Failed to submit defective product:', err)
+    alert(`Gagal mencatat produk rusak: ${err.message}`)
+  } finally {
+    isSubmitting.value = false
   }
 }
 
