@@ -16,6 +16,18 @@
           />
         </div>
 
+        <!-- Honeypot field (hidden from users) -->
+        <div class="hp-field" aria-hidden="true">
+          <input
+            v-model="form.website"
+            type="text"
+            name="website"
+            tabindex="-1"
+            autocomplete="off"
+            placeholder="Do not fill this field"
+          />
+        </div>
+
         <div class="form-group">
           <label for="password">Kata Sandi</label>
           <input
@@ -78,7 +90,8 @@ const router = useRouter()
 // State form
 const form = ref({
   username: '',
-  password: ''
+  password: '',
+  website: '' // Honeypot
 })
 
 // State loading button
@@ -99,6 +112,14 @@ const triggerToast = (message, type = 'info') => {
 // Fungsi handleLogin
 const handleLogin = async () => {
   error.value = null
+
+  // Honeypot check
+  if (form.value.website) {
+    console.warn('Bot detected: Honeypot field filled.')
+    // Fail silently or show a generic error to not tip off the bot
+    triggerToast('Terjadi kesalahan. Silakan coba lagi nanti.', 'error')
+    return
+  }
 
   // Validasi dasar
   if (!form.value.username || !form.value.password) {
@@ -254,6 +275,18 @@ label {
   font-size: 1em;
   transition: border-color 0.3s ease;
   box-sizing: border-box;
+}
+
+/* Honeypot Styling */
+.hp-field {
+  opacity: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 0;
+  width: 0;
+  z-index: -1;
+  overflow: hidden;
 }
 
 .input-field:focus {
