@@ -102,7 +102,7 @@ const fetchHistory = async () => {
       historyData.value = data.map((item, index) => ({
         id: item.productId || index,
         productName: item.productName || 'Produk Tidak Diketahui',
-        totalQty: item.totalQty || item.qty || 0,
+        totalQty: item.totalQuantity || 0,
         times: Array.isArray(item.times) ? item.times : []
       }))
     } else {
