@@ -94,17 +94,43 @@ const fetchHistory = async () => {
       return
     }
 
-    const response = await transactionApi.get(`/sales/history?time=${currentFilter.value}`)
+    let endpoint = `/sales/history?time=${currentFilter.value}`
+    if (currentFilter.value === 'today') {
+      endpoint = '/sales/history/today-grouped'
+    }
+    
+    const response = await transactionApi.get(endpoint)
     
     if (response && (response.responseCode === '200' || response.status === 'success')) {
       const data = response.data?.salesDetail || []
-      // Map API data to component structure
-      historyData.value = data.map((item, index) => ({
-        id: item.productId || index,
-        productName: item.productName || 'Produk Tidak Diketahui',
-        totalQty: item.totalQuantity || 0,
-        times: Array.isArray(item.times) ? item.times : []
-      }))
+      
+      if (currentFilter.value === 'today') {
+        const grouped = data.reduce((acc, item) => {
+          const pid = item.productId
+          if (!acc[pid]) {
+            acc[pid] = {
+              id: pid,
+              productName: item.productName || 'Produk Tidak Diketahui',
+              totalQty: 0,
+              times: []
+            }
+          }
+          acc[pid].totalQty += (item.totalQuantity || 0)
+          if (item.minuteBucket && !acc[pid].times.includes(item.minuteBucket)) {
+            acc[pid].times.push(item.minuteBucket)
+          }
+          return acc
+        }, {})
+        historyData.value = Object.values(grouped)
+      } else {
+        // Map API data for week/month filters
+        historyData.value = data.map((item, index) => ({
+          id: item.productId || index,
+          productName: item.productName || 'Produk Tidak Diketahui',
+          totalQty: item.totalQuantity || 0,
+          times: Array.isArray(item.times) ? item.times : []
+        }))
+      }
     } else {
       error.value = response?.responseMessage || 'Gagal memuat riwayat penjualan'
     }
