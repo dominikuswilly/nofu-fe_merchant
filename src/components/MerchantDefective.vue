@@ -57,18 +57,33 @@
     </div>
 
     <div class="history-section">
-      <h3>Riwayat Produk Rusak</h3>
-      <div v-if="defectiveHistory.length === 0" class="empty-state">
+      <div class="section-header">
+        <h3>Riwayat Produk Rusak</h3>
+        <button @click="fetchDefectiveHistory" class="refresh-btn" :disabled="isFetchingHistory">
+          <span :class="{ 'spinning': isFetchingHistory }">🔄</span>
+        </button>
+      </div>
+
+      <div v-if="isFetchingHistory" class="loading-state">
+        <div class="mini-loader"></div>
+        <p>Memuat riwayat...</p>
+      </div>
+      <div v-else-if="defectiveHistory.length === 0" class="empty-state">
         Belum ada catatan produk rusak
       </div>
       <div v-else class="history-list">
         <div v-for="record in defectiveHistory" :key="record.id" class="history-item">
           <div class="item-header">
             <span class="product-name">{{ record.productName }}</span>
-            <span class="quantity">{{ record.quantity }} pcs</span>
+            <div class="header-right">
+              <span class="quantity">{{ record.quantity }} pcs</span>
+              <button @click="cancelDefectiveRecord(record)" class="cancel-row-btn" title="Batalkan">
+                &times;
+              </button>
+            </div>
           </div>
           <div class="item-details">
-            <span class="date">{{ formatDate(record.date) }}</span>
+            <span class="date">{{ formatDate(record.createdAt || record.date) }}</span>
             <span v-if="record.reason" class="reason">{{ record.reason }}</span>
           </div>
           <p v-if="record.notes" class="notes">{{ record.notes }}</p>
@@ -87,6 +102,7 @@ import { getMerchantId } from '@/utils/auth'
 const products = ref([])
 const isLoading = ref(false)
 const isSubmitting = ref(false)
+const isFetchingHistory = ref(false)
 const error = ref(null)
 
 const form = ref({
@@ -127,8 +143,33 @@ const fetchProducts = async () => {
   }
 }
 
+const fetchDefectiveHistory = async () => {
+  isFetchingHistory.value = true
+  try {
+    const response = await transactionApi.get('/sales/defect')
+    if (response && response.data) {
+      // Assuming response.data is an array or contains an array
+      const rawData = response.data.defectDetails || response.data || []
+      defectiveHistory.value = rawData.map(item => ({
+        id: item.id || item.ID,
+        productId: item.productId,
+        productName: item.productName || 'Produk Tidak Diketahui',
+        quantity: item.qty || item.quantity,
+        reason: item.reason || 'Rusak',
+        notes: item.notes,
+        createdAt: item.createdAt || item.date
+      }))
+    }
+  } catch (err) {
+    console.error('Failed to fetch defective history:', err)
+  } finally {
+    isFetchingHistory.value = false
+  }
+}
+
 onMounted(() => {
   fetchProducts()
+  fetchDefectiveHistory()
 })
 
 const selectedProductStock = computed(() => {
@@ -167,19 +208,6 @@ const submitDefective = async () => {
     const response = await transactionApi.post('/sales/defect/create', payload)
     
     if (response) {
-      // Add to local history for immediate UI feedback
-      defectiveHistory.value.unshift({
-        id: Date.now(),
-        productName: product.name,
-        quantity: form.value.quantity,
-        reason: form.value.reason || 'Tidak disebutkan',
-        notes: form.value.notes,
-        date: new Date().toISOString()
-      })
-
-      // Show success message
-      alert(`Berhasil mencatat ${form.value.quantity} ${product.name} sebagai produk rusak`)
-
       // Reset form
       form.value = {
         productId: '',
@@ -188,8 +216,14 @@ const submitDefective = async () => {
         notes: ''
       }
 
-      // Refresh products to get updated stock
-      await fetchProducts()
+      // Refresh products and history
+      await Promise.all([
+        fetchProducts(),
+        fetchDefectiveHistory()
+      ])
+
+      // Show success message
+      alert(`Berhasil mencatat ${form.value.quantity} ${product.name} sebagai produk rusak`)
     }
   } catch (err) {
     console.error('Failed to submit defective product:', err)
@@ -199,7 +233,30 @@ const submitDefective = async () => {
   }
 }
 
+const cancelDefectiveRecord = async (record) => {
+  if (!confirm(`Apakah Anda yakin ingin membatalkan catatan ${record.productName} (${record.quantity} pcs)?`)) {
+    return
+  }
+
+  try {
+    // Assuming DELETE /sales/defect/{id}
+    await transactionApi.del(`/sales/defect/${record.id}`)
+    
+    alert('Catatan berhasil dibatalkan')
+    
+    // Refresh data
+    await Promise.all([
+      fetchProducts(),
+      fetchDefectiveHistory()
+    ])
+  } catch (err) {
+    console.error('Failed to cancel defective record:', err)
+    alert(`Gagal membatalkan catatan: ${err.message}`)
+  }
+}
+
 const formatDate = (dateString) => {
+  if (!dateString) return '-'
   const date = new Date(dateString)
   return date.toLocaleDateString('id-ID', { 
     day: '2-digit', 
@@ -296,9 +353,65 @@ const formatDate = (dateString) => {
 }
 
 .history-section h3 {
-  margin-top: 0;
+  margin: 0;
   color: #2d3748;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 16px;
+}
+
+.refresh-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2em;
+  padding: 4px;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.refresh-btn:hover:not(:disabled) {
+  background-color: #f7fafc;
+}
+
+.refresh-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.spinning {
+  display: inline-block;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 40px 0;
+  color: #718096;
+}
+
+.mini-loader {
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #e53e3e;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  animation: spin 1s linear infinite;
 }
 
 .empty-state {
@@ -332,13 +445,33 @@ const formatDate = (dateString) => {
   color: #2d3748;
 }
 
-.quantity {
-  background-color: #e53e3e;
-  color: white;
-  padding: 4px 8px;
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cancel-row-btn {
+  background: #fff;
+  color: #e53e3e;
+  border: 1px solid #fed7d7;
+  width: 24px;
+  height: 24px;
   border-radius: 4px;
-  font-size: 0.85em;
-  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.2s;
+  padding: 0;
+  line-height: 1;
+}
+
+.cancel-row-btn:hover {
+  background: #e53e3e;
+  color: white;
+  border-color: #e53e3e;
 }
 
 .item-details {
