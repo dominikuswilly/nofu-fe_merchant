@@ -28,27 +28,7 @@
           <small v-if="selectedProductStock" class="hint">Maksimal: {{ selectedProductStock }}</small>
         </div>
 
-        <div class="form-group">
-          <label for="reason">Alasan (Opsional)</label>
-          <select id="reason" v-model="form.reason" class="input-field">
-            <option value="">-- Pilih Alasan --</option>
-            <option value="Rusak">Rusak</option>
-            <option value="Kadaluarsa">Kadaluarsa</option>
-            <option value="Cacat Produksi">Cacat Produksi</option>
-            <option value="Lainnya">Lainnya</option>
-          </select>
-        </div>
 
-        <div class="form-group" v-if="form.reason === 'Lainnya'">
-          <label for="notes">Catatan</label>
-          <textarea 
-            id="notes" 
-            v-model="form.notes" 
-            class="input-field"
-            rows="3"
-            placeholder="Tulis catatan..."
-          ></textarea>
-        </div>
 
         <button type="submit" class="submit-btn" :disabled="!canSubmit">
           {{ isSubmitting ? 'Menyimpan...' : 'Catat Produk Rusak' }}
@@ -82,10 +62,7 @@
               </button>
             </div>
           </div>
-          <div class="item-details">
-            <span class="date">{{ formatDate(record.createdAt || record.date) }}</span>
-            <span v-if="record.reason" class="reason">{{ record.reason }}</span>
-          </div>
+
           <p v-if="record.notes" class="notes">{{ record.notes }}</p>
         </div>
       </div>
@@ -107,9 +84,7 @@ const error = ref(null)
 
 const form = ref({
   productId: '',
-  quantity: null,
-  reason: '',
-  notes: ''
+  quantity: null
 })
 
 const defectiveHistory = ref([])
@@ -211,9 +186,7 @@ const submitDefective = async () => {
       // Reset form
       form.value = {
         productId: '',
-        quantity: null,
-        reason: '',
-        notes: ''
+        quantity: null
       }
 
       // Refresh products and history
@@ -255,17 +228,7 @@ const cancelDefectiveRecord = async (record) => {
   }
 }
 
-const formatDate = (dateString) => {
-  if (!dateString) return '-'
-  const date = new Date(dateString)
-  return date.toLocaleDateString('id-ID', { 
-    day: '2-digit', 
-    month: 'short', 
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-}
+
 </script>
 
 <style scoped>
@@ -474,17 +437,7 @@ const formatDate = (dateString) => {
   border-color: #e53e3e;
 }
 
-.item-details {
-  display: flex;
-  gap: 12px;
-  font-size: 0.85em;
-  color: #718096;
-}
 
-.reason {
-  color: #e53e3e;
-  font-weight: 600;
-}
 
 .notes {
   margin-top: 8px;
