@@ -180,6 +180,7 @@ const submitDefective = async () => {
       ]
     }
 
+    const submittedQty = form.value.quantity
     const response = await transactionApi.post('/sales/defect/create', payload)
     
     if (response) {
@@ -196,7 +197,7 @@ const submitDefective = async () => {
       ])
 
       // Show success message
-      alert(`Berhasil mencatat ${form.value.quantity} ${product.name} sebagai produk rusak`)
+      alert(`Berhasil mencatat ${submittedQty} ${product.name} sebagai produk rusak`)
     }
   } catch (err) {
     console.error('Failed to submit defective product:', err)
