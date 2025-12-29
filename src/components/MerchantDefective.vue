@@ -213,8 +213,8 @@ const cancelDefectiveRecord = async (record) => {
   }
 
   try {
-    // Assuming DELETE /sales/defect/{id}
-    await transactionApi.del(`/sales/defect/${record.id}`)
+    // DELETE /sales/defect/{product_id}
+    await transactionApi.del(`/sales/defect/${record.productId}`)
     
     alert('Catatan berhasil dibatalkan')
     
