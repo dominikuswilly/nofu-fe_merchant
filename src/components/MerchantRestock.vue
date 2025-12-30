@@ -69,7 +69,10 @@
       <div v-else class="requests-list">
         <div v-for="request in restockRequests" :key="request.id" class="request-item" :class="'status-' + request.status">
           <div class="item-header">
-            <span class="product-name">{{ request.productName }}</span>
+            <div class="product-info">
+              <span class="product-name">{{ request.productName }}</span>
+              <span class="request-id">ID: {{ request.id }}</span>
+            </div>
             <span class="status-badge" :class="request.status">
               {{ getStatusLabel(request.status) }}
             </span>
@@ -88,13 +91,6 @@
             <div class="detail-row">
               <span class="label">Waktu:</span>
               <span class="value">{{ formatDate(request.date) }}</span>
-            </div>
-
-            <div class="detail-row" v-if="request.latitude && request.longitude">
-              <span class="label">Lokasi:</span>
-              <span class="value location-text">
-                {{ request.latitude.toFixed(6) }}, {{ request.longitude.toFixed(6) }}
-              </span>
             </div>
           </div>
 
@@ -156,13 +152,16 @@ const fetchProducts = async () => {
 const fetchRestockList = async () => {
   try {
     const response = await transactionApi.get('/restock')
-    if (response && response.data && response.data.restockDetail) {
-      restockRequests.value = response.data.restockDetail.map(item => ({
-        id: item.id || Math.random(),
-        productName: item.productName,
-        quantity: item.qty || item.quantity,
+    // Handle both { data: { restockDetail: [] } } and { data: [] }
+    const list = response?.data?.restockDetail || response?.data || []
+    
+    if (Array.isArray(list)) {
+      restockRequests.value = list.map(item => ({
+        id: item.id || item.transactionId || Math.random().toString(),
+        productName: item.productName || item.product?.name || 'Produk',
+        quantity: item.qty || item.quantity || 0,
         status: item.status || 'pending',
-        date: item.tsCreatedAt || item.date || new Date().toISOString(),
+        date: item.tsCreatedAt || item.ts_created_at || item.createdAt || new Date().toISOString(),
         latitude: item.latitude,
         longitude: item.longitude
       }))
@@ -499,6 +498,17 @@ const formatDate = (dateString) => {
 .product-name {
   font-weight: 600;
   color: #2d3748;
+}
+
+.request-id {
+  font-size: 0.75em;
+  color: #a0aec0;
+  font-family: monospace;
+}
+
+.product-info {
+  display: flex;
+  flex-direction: column;
 }
 
 .status-badge {
