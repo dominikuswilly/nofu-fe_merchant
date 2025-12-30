@@ -69,10 +69,7 @@
       <div v-else class="requests-list">
         <div v-for="request in restockRequests" :key="request.id" class="request-item" :class="'status-' + request.status">
           <div class="item-header">
-            <div class="product-info">
-              <span class="product-name">{{ request.productName }}</span>
-              <span class="request-id">ID: {{ request.id }}</span>
-            </div>
+
             <span class="status-badge" :class="request.status">
               {{ getStatusLabel(request.status) }}
             </span>
