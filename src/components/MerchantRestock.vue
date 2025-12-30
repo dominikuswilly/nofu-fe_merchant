@@ -29,24 +29,7 @@
           </div>
         </div>
 
-        <div class="form-group">
-          <label for="priority">Prioritas Item</label>
-          <select id="priority" v-model="form.priority" class="input-field">
-            <option value="normal">Normal</option>
-            <option value="urgent">Mendesak</option>
-          </select>
-        </div>
 
-        <div class="form-group">
-          <label for="notes">Catatan per Item (Opsional)</label>
-          <input 
-            id="notes" 
-            v-model="form.notes" 
-            type="text"
-            class="input-field"
-            placeholder="Catatan..."
-          />
-        </div>
 
         <button @click="addToCart" class="add-btn" :disabled="!canAdd">
           + Tambah ke Daftar
@@ -62,9 +45,7 @@
               <span class="cart-product">{{ item.productName }}</span>
               <span class="cart-details">
                 {{ item.quantity }} pcs 
-                <span v-if="item.priority === 'urgent'" class="badge-urgent">Urgent</span>
               </span>
-              <span v-if="item.notes" class="cart-notes">{{ item.notes }}</span>
             </div>
             <button @click="removeFromCart(index)" class="remove-btn" title="Hapus">
               ✕
@@ -98,18 +79,13 @@
               <span class="label">Jumlah:</span>
               <span class="value">{{ request.quantity }} pcs</span>
             </div>
-            <div class="detail-row">
-              <span class="label">Prioritas:</span>
-              <span class="value" :class="'priority-' + request.priority">
-                {{ request.priority === 'urgent' ? 'Mendesak' : 'Normal' }}
-              </span>
-            </div>
+
             <div class="detail-row">
               <span class="label">Tanggal:</span>
               <span class="value">{{ formatDate(request.date) }}</span>
             </div>
           </div>
-          <p v-if="request.notes" class="notes">{{ request.notes }}</p>
+
         </div>
       </div>
     </div>
@@ -129,8 +105,7 @@ const error = ref(null)
 const form = ref({
   productId: '',
   quantity: null,
-  priority: 'normal',
-  notes: ''
+
 })
 
 const cart = ref([])
@@ -179,14 +154,13 @@ const addToCart = () => {
     productId: product.id,
     productName: product.name,
     quantity: form.value.quantity,
-    priority: form.value.priority,
-    notes: form.value.notes
+
   })
 
   // Reset form partialy
   form.value.productId = ''
   form.value.quantity = null
-  form.value.notes = ''
+
   // keep priority
 }
 
@@ -202,8 +176,7 @@ const submitCart = () => {
     id: Date.now() + Math.random(),
     productName: item.productName,
     quantity: item.quantity,
-    priority: item.priority,
-    notes: item.notes,
+
     status: 'pending',
     date: new Date().toISOString()
   }))
@@ -363,20 +336,7 @@ const formatDate = (dateString) => {
   color: #718096;
 }
 
-.badge-urgent {
-  background-color: #fed7d7;
-  color: #c53030;
-  padding: 1px 6px;
-  border-radius: 4px;
-  font-size: 0.9em;
-  margin-left: 6px;
-}
 
-.cart-notes {
-  font-size: 0.8em;
-  color: #718096;
-  font-style: italic;
-}
 
 .remove-btn {
   background: none;
@@ -511,19 +471,7 @@ const formatDate = (dateString) => {
   font-weight: 500;
 }
 
-.priority-urgent {
-  color: #e53e3e;
-  font-weight: 600;
-}
 
-.notes {
-  margin-top: 8px;
-  font-size: 0.9em;
-  color: #4a5568;
-  font-style: italic;
-  padding-top: 8px;
-  border-top: 1px solid #e2e8f0;
-}
 
 @media (max-width: 640px) {
   .form-row {
