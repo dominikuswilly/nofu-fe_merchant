@@ -67,30 +67,25 @@
         Belum ada permintaan restock
       </div>
       <div v-else class="requests-list">
-        <div v-for="request in restockRequests" :key="request.id" class="request-item" :class="'status-' + request.status">
-          <div class="item-header">
-
-            <span class="status-badge" :class="request.status">
-              {{ getStatusLabel(request.status) }}
-            </span>
-          </div>
-          <div class="item-details">
-
-
-            <div class="detail-row">
-              <span class="label">Status:</span>
-              <span class="value">{{ getStatusLabel(request.status) }}</span>
+        <div v-for="request in restockRequests" :key="request.id" class="request-card" :class="'status-' + request.status">
+          <div class="card-body">
+            <div class="card-icon" :class="request.status">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
             </div>
-
-            <div class="detail-row">
-              <span class="label">Waktu:</span>
-              <span class="value">{{ formatDate(request.date) }}</span>
+            <div class="card-info">
+              <div class="card-title-row">
+                <span class="card-id">#{{ request.id.toString().slice(-6).toUpperCase() }}</span>
+                <span class="status-pill" :class="request.status">
+                  {{ getStatusLabel(request.status) }}
+                </span>
+              </div>
+              <h4 class="card-title">Permintaan Restock</h4>
+              <p class="card-time">{{ formatDate(request.date) }}</p>
             </div>
           </div>
-
-          <div class="item-actions">
-            <button class="action-btn-outline">Detail</button>
-            <button class="action-btn-outline">History</button>
+          <div class="card-actions">
+            <button class="btn-detail">Lihat Detail</button>
+            <button class="btn-history">Riwayat</button>
           </div>
         </div>
       </div>
@@ -457,128 +452,140 @@ const formatDate = (dateString) => {
   padding: 40px 20px;
 }
 
+/* Modern Request Card Styles */
 .requests-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
 }
 
-.request-item {
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 12px;
-  background-color: #f7fafc;
+.request-card {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid #edf2f7;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 
-.request-item.status-pending {
-  border-left: 4px solid #f6ad55;
+.request-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 
-.request-item.status-approved {
-  border-left: 4px solid #48bb78;
-}
-
-.request-item.status-rejected {
-  border-left: 4px solid #fc8181;
-}
-
-.item-header {
+.card-body {
+  padding: 16px;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
+  gap: 16px;
+  align-items: flex-start;
 }
 
-.product-name {
-  font-weight: 600;
-  color: #2d3748;
-}
-
-.request-id {
-  font-size: 0.75em;
-  color: #a0aec0;
-  font-family: monospace;
-}
-
-.product-info {
-  display: flex;
-  flex-direction: column;
-}
-
-.status-badge {
-  padding: 4px 12px;
+.card-icon {
+  width: 48px;
+  height: 48px;
   border-radius: 12px;
-  font-size: 0.8em;
-  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
-.status-badge.pending {
-  background-color: #fef5e7;
+.card-icon.pending {
+  background: #fffaf0;
   color: #d97706;
 }
 
-.status-badge.approved {
-  background-color: #d1fae5;
-  color: #065f46;
+.card-icon.approved {
+  background: #f0fdf4;
+  color: #16a34a;
 }
 
-.status-badge.rejected {
-  background-color: #fee2e2;
-  color: #991b1b;
+.card-icon.rejected {
+  background: #fef2f2;
+  color: #dc2626;
 }
 
-.item-details {
+.card-info {
+  flex: 1;
+}
+
+.card-title-row {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 0.9em;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
 }
 
-.detail-row {
-  display: flex;
-  gap: 8px;
-}
-
-.detail-row .label {
-  color: #718096;
-  min-width: 80px;
-}
-
-.detail-row .value {
-  color: #2d3748;
-  font-weight: 500;
-}
-
-.location-text {
+.card-id {
   font-family: monospace;
-  font-size: 0.9em;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #a0aec0;
+  letter-spacing: 0.5px;
 }
 
-.item-actions {
+.status-pill {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.status-pill.pending { background: #fee2e2; color: #991b1b; } /* Orange-ish fallback */
+.status-pill.pending { background: #fef3c7; color: #92400e; }
+.status-pill.approved { background: #dcfce7; color: #166534; }
+.status-pill.rejected { background: #fee2e2; color: #991b1b; }
+
+.card-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1a202c;
+}
+
+.card-time {
+  margin: 2px 0 0 0;
+  font-size: 0.85rem;
+  color: #718096;
+}
+
+.card-actions {
   display: flex;
-  gap: 8px;
-  margin-top: 12px;
-  padding-top: 12px;
+  gap: 1px;
+  background: #edf2f7;
   border-top: 1px solid #edf2f7;
 }
 
-.action-btn-outline {
+.card-actions button {
   flex: 1;
   background: white;
-  border: 1px solid #cbd5e0;
-  color: #4a5568;
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 0.85em;
+  border: none;
+  padding: 12px;
+  font-size: 0.85rem;
   font-weight: 600;
+  color: #4a5568;
   cursor: pointer;
   transition: all 0.2s;
 }
 
-.action-btn-outline:hover {
-  background: #f7fafc;
-  border-color: #a0aec0;
+.card-actions button:hover {
+  background: #f8fafc;
   color: #2d3748;
+}
+
+.btn-detail {
+  border-right: 1px solid #edf2f7 !important;
+}
+
+@media (max-width: 640px) {
+  .card-body {
+    padding: 12px;
+  }
+  .card-icon {
+    width: 40px;
+    height: 40px;
+  }
 }
 
 
