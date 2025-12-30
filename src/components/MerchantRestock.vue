@@ -137,7 +137,7 @@ const fetchProducts = async () => {
   }
 }
 
-const fetchRestockHistory = async () => {
+const fetchRestockList = async () => {
   try {
     const response = await transactionApi.get('/restock')
     if (response && response.data && response.data.restockDetail) {
@@ -156,7 +156,7 @@ const fetchRestockHistory = async () => {
 
 onMounted(() => {
   fetchProducts()
-  fetchRestockHistory()
+  fetchRestockList()
 })
 
 const canAdd = computed(() => {
@@ -233,7 +233,7 @@ const submitCart = async () => {
     if (response) {
       alert(`${cart.value.length} permintaan restock berhasil dikirim`)
       cart.value = []
-      await fetchRestockHistory()
+      await fetchRestockList()
     }
   } catch (err) {
     console.error('Failed to submit restock:', err)
