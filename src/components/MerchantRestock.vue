@@ -81,11 +81,27 @@
             </div>
 
             <div class="detail-row">
-              <span class="label">Tanggal:</span>
+              <span class="label">Status:</span>
+              <span class="value">{{ getStatusLabel(request.status) }}</span>
+            </div>
+
+            <div class="detail-row">
+              <span class="label">Waktu:</span>
               <span class="value">{{ formatDate(request.date) }}</span>
+            </div>
+
+            <div class="detail-row" v-if="request.latitude && request.longitude">
+              <span class="label">Lokasi:</span>
+              <span class="value location-text">
+                {{ request.latitude.toFixed(6) }}, {{ request.longitude.toFixed(6) }}
+              </span>
             </div>
           </div>
 
+          <div class="item-actions">
+            <button class="action-btn-outline">Detail</button>
+            <button class="action-btn-outline">History</button>
+          </div>
         </div>
       </div>
     </div>
@@ -146,7 +162,9 @@ const fetchRestockList = async () => {
         productName: item.productName,
         quantity: item.qty || item.quantity,
         status: item.status || 'pending',
-        date: item.tsCreatedAt || item.date || new Date().toISOString()
+        date: item.tsCreatedAt || item.date || new Date().toISOString(),
+        latitude: item.latitude,
+        longitude: item.longitude
       }))
     }
   } catch (err) {
@@ -525,6 +543,38 @@ const formatDate = (dateString) => {
 .detail-row .value {
   color: #2d3748;
   font-weight: 500;
+}
+
+.location-text {
+  font-family: monospace;
+  font-size: 0.9em;
+}
+
+.item-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #edf2f7;
+}
+
+.action-btn-outline {
+  flex: 1;
+  background: white;
+  border: 1px solid #cbd5e0;
+  color: #4a5568;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.85em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.action-btn-outline:hover {
+  background: #f7fafc;
+  border-color: #a0aec0;
+  color: #2d3748;
 }
 
 
