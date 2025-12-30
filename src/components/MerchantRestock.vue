@@ -137,8 +137,26 @@ const fetchProducts = async () => {
   }
 }
 
+const fetchRestockHistory = async () => {
+  try {
+    const response = await transactionApi.get('/restock')
+    if (response && response.data && response.data.restockDetail) {
+      restockRequests.value = response.data.restockDetail.map(item => ({
+        id: item.id || Math.random(),
+        productName: item.productName,
+        quantity: item.qty || item.quantity,
+        status: item.status || 'pending',
+        date: item.tsCreatedAt || item.date || new Date().toISOString()
+      }))
+    }
+  } catch (err) {
+    console.error('Failed to fetch restock history:', err)
+  }
+}
+
 onMounted(() => {
   fetchProducts()
+  fetchRestockHistory()
 })
 
 const canAdd = computed(() => {
@@ -168,23 +186,61 @@ const removeFromCart = (index) => {
   cart.value.splice(index, 1)
 }
 
-const submitCart = () => {
+const getGeolocation = () => {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject(new Error('Geolocation is not supported by your browser'))
+    } else {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          resolve({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
+          })
+        },
+        (err) => {
+          reject(err)
+        }
+      )
+    }
+  })
+}
+
+const submitCart = async () => {
   if (cart.value.length === 0) return
+  isLoading.value = true
 
-  // Mock API call simulation - batch process
-  const newRequests = cart.value.map(item => ({
-    id: Date.now() + Math.random(),
-    productName: item.productName,
-    quantity: item.quantity,
+  try {
+    let location = { latitude: 0, longitude: 0 }
+    try {
+      location = await getGeolocation()
+    } catch (locErr) {
+      console.warn('Could not get geolocation:', locErr)
+      // Proceed with 0,0 or handle as error? User example shows them included.
+    }
 
-    status: 'pending',
-    date: new Date().toISOString()
-  }))
+    const payload = {
+      item: cart.value.map(item => ({
+        productId: item.productId,
+        qty: item.quantity
+      })),
+      latitude: location.latitude,
+      longitude: location.longitude
+    }
 
-  restockRequests.value.unshift(...newRequests)
-
-  alert(`${cart.value.length} permintaan restock berhasil dikirim ke admin`)
-  cart.value = []
+    const response = await transactionApi.post('/restock/create', payload)
+    
+    if (response) {
+      alert(`${cart.value.length} permintaan restock berhasil dikirim`)
+      cart.value = []
+      await fetchRestockHistory()
+    }
+  } catch (err) {
+    console.error('Failed to submit restock:', err)
+    alert('Gagal mengirim permintaan restock. Silakan coba lagi.')
+  } finally {
+    isLoading.value = false
+  }
 }
 
 const getStatusLabel = (status) => {
