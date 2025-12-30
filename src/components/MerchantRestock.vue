@@ -78,10 +78,7 @@
             </span>
           </div>
           <div class="item-details">
-            <div class="detail-row">
-              <span class="label">Jumlah:</span>
-              <span class="value">{{ request.quantity }} pcs</span>
-            </div>
+
 
             <div class="detail-row">
               <span class="label">Status:</span>
