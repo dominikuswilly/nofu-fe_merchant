@@ -176,6 +176,7 @@ onMounted(() => {
 .content-area {
   max-width: 800px;
   margin: 0 auto;
+  padding: 20px;
 }
 
 .tab-content h2 {
