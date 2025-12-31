@@ -6,7 +6,7 @@
         <span class="icon-circle">💰</span>
         <h3>Saldo Tersedia</h3>
       </div>
-      <h2 class="amount">{{ formatCurrency(balance) }}</h2>
+      <h2 class="amount">{{ formatCurrency(qrisBalance) }}</h2>
       <button class="action-btn">Tarik Dana</button>
       <p class="update-info">Terakhir diupdate: {{ lastUpdated }}</p>
     </div>
@@ -48,12 +48,19 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { transactionApi } from '@/utils/api'
 
 // Mock Data
-const balance = ref(2500000)
 const balanceData = ref(null)
+
+const qrisBalance = computed(() => {
+  if (!balanceData.value || !balanceData.value.balanceGroup) return 0
+  const qrisItem = balanceData.value.balanceGroup.find(
+    (item) => item.paymentMethod.toLowerCase() === 'qris'
+  )
+  return qrisItem ? qrisItem.totalBalance : 0
+})
 
 const lastUpdated = ref(new Date().toLocaleTimeString('id-ID', { 
   hour: '2-digit', 
