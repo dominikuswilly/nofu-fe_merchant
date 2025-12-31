@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nofu-merchant-cache-v1';
+const CACHE_NAME = 'merchant-cache-v1';
 const urlsToCache = [
     './',
     'index.html',
