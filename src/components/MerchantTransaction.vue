@@ -914,7 +914,8 @@ onMounted(() => {
 .mt-4 { margin-top: 1rem; }
 
 .product-image-placeholder {
-  height: 120px;
+  width: 100%;
+  aspect-ratio: 1 / 1;
   display: flex;
   justify-content: center;
   align-items: center;
