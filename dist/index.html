@@ -1,1 +1,54 @@
-<!doctype html><html lang=""><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1,interactive-widget=resizes-content"><link rel="icon" href="/favicon.ico"><title>merchant</title><script defer="defer" src="/js/chunk-vendors.ae800dc6.js"></script><script defer="defer" src="/js/app.0dd3edad.js"></script><link href="/css/app.4897c18a.css" rel="stylesheet"></head><body><noscript><strong>We're sorry but merchant doesn't work properly without JavaScript enabled. Please enable it to continue.</strong></noscript><div id="app"></div></body></html>
+<!doctype html>
+<html lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1,interactive-widget=resizes-content">
+    <link rel="icon" href="/favicon.ico">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <title>merchant</title>
+    <script defer="defer" src="/js/chunk-vendors.ae800dc6.js"></script>
+    <script defer="defer" src="/js/app.1bc45bad.js"></script>
+    <link href="/css/app.98f70ab9.css" rel="stylesheet">
+</head>
+
+<body><noscript><strong>We're sorry but merchant doesn't work properly without JavaScript enabled. Please enable it to
+            continue.</strong></noscript> <!-- Critical: Scripts BEFORE </body> -->
+    <script>
+        // Register Service Worker FIRST
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/service-worker.js')
+                .then(() => console.log('SW registered'))
+                .catch(err => console.error('SW failed:', err));
+        }
+    </script>
+
+    <!-- PWA Install Handler -->
+    <script>
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', e => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('install-btn').style.display = 'block';
+        });
+
+        document.getElementById('install-btn').addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                console.log('Install:', outcome);
+                deferredPrompt = null;
+                document.getElementById('install-btn').style.display = 'none';
+            }
+        });
+
+        window.addEventListener('appinstalled', () => {
+            document.getElementById('install-btn').style.display = 'none';
+        });
+    </script>
+    <div id="app"></div>
+</body>
+
+</html>
