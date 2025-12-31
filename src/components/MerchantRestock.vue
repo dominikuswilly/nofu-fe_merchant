@@ -318,7 +318,7 @@ const fetchHistory = async (request) => {
       item: items
     }
 
-    const response = await transactionApi.post(`/restock/${request.id}/history`, payload)
+    const response = await transactionApi.get(`/restock/${request.id}/history`, payload)
     
     if (response && response.responseCode === "200") {
       historyData.value = response.data || []
