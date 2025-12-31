@@ -105,7 +105,7 @@
         <p class="qr-amount">Total: {{ formatCurrency(totalPrice) }}</p>
         <div class="action-buttons">
           <button class="confirm-btn cancel" @click="showQR = false">Batalkan</button>
-          <button class="confirm-btn success" @click="finishTransaction" :disabled="submitting">
+          <button class="confirm-btn success" @click="finishTransaction('qris')" :disabled="submitting">
             {{ submitting ? 'Menyimpan...' : 'Selesai' }}
           </button>
         </div>
@@ -360,10 +360,10 @@ const selectCash = () => {
 }
 
 const confirmCashPayment = () => {
-  finishTransaction()
+  finishTransaction('cash')
 }
 
-const finishTransaction = async () => {
+const finishTransaction = async (paymentMethod) => {
   submitting.value = true
   try {
     const salesDetails = cartItems.value.map(item => {
@@ -378,7 +378,9 @@ const finishTransaction = async () => {
     })
 
     const payload = {
-      salesDetails
+      salesDetails,
+      paymentMethod,
+      totalPayment: totalPrice.value
     }
 
     const response = await transactionApi.post('/sales/create', payload)
@@ -395,7 +397,7 @@ const finishTransaction = async () => {
     console.error('Transaction error:', err)
     const retry = confirm(`Gagal menyimpan transaksi: ${err.message}\n\nCoba lagi?`)
     if (retry) {
-      finishTransaction()
+      finishTransaction(paymentMethod)
     } else {
       // User cancelled retry, stay in modal?
     }
@@ -403,12 +405,6 @@ const finishTransaction = async () => {
     submitting.value = false
   }
 }
-
-// const cancelTransaction = () => {
-//   showQR.value = false
-//   cart.value = {}
-//   alert('Transaksi sudah dibatalkan')
-// }
 
 onMounted(() => {
   fetchProducts()
