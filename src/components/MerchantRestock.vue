@@ -84,7 +84,7 @@
             </div>
           </div>
           <div class="card-actions">
-            <button class="btn-detail">Lihat Detail</button>
+            <button class="btn-detail" @click="fetchDetail(request.id)">Lihat Detail</button>
             <button class="btn-history" @click="fetchHistory(request)">Riwayat</button>
           </div>
         </div>
@@ -134,6 +134,44 @@
         </div>
       </div>
     </div>
+
+    <!-- Detail Modal -->
+    <div v-if="showDetailModal" class="modal-overlay" @click.self="showDetailModal = false">
+      <div class="modal-content detail-modal">
+        <div class="modal-header">
+          <h3>Detail Permintaan</h3>
+          <button class="close-btn" @click="showDetailModal = false">✕</button>
+        </div>
+        
+        <div v-if="isDetailLoading" class="modal-loader">
+          <div class="spinner"></div>
+          <p>Memuat detail...</p>
+        </div>
+        
+        <div v-else-if="detailData.length === 0" class="empty-history">
+          Tidak ada data detail
+        </div>
+        
+        <div v-else class="history-table-container">
+          <table class="history-table">
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>Nama Produk</th>
+                <th>Jumlah</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(row, index) in detailData" :key="row.id">
+                <td>{{ index + 1 }}</td>
+                <td>{{ row.productName }}</td>
+                <td>{{ row.qty }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -160,6 +198,11 @@ const restockRequests = ref([])
 const showHistoryModal = ref(false)
 const historyData = ref([])
 const isHistoryLoading = ref(false)
+
+// Detail Modal State
+const showDetailModal = ref(false)
+const detailData = ref([])
+const isDetailLoading = ref(false)
 
 const fetchProducts = async () => {
   isLoading.value = true
@@ -329,6 +372,26 @@ const fetchHistory = async (request) => {
     console.error('Failed to fetch history:', err)
   } finally {
     isHistoryLoading.value = false
+  }
+}
+
+const fetchDetail = async (requestId) => {
+  isDetailLoading.value = true
+  showDetailModal.value = true
+  detailData.value = []
+  
+  try {
+    const response = await transactionApi.get(`/restock/${requestId}/detail`)
+    
+    if (response && response.responseCode === "200") {
+      detailData.value = response.data || []
+    } else {
+      console.warn('Detail API responded with non-200 code:', response)
+    }
+  } catch (err) {
+    console.error('Failed to fetch detail:', err)
+  } finally {
+    isDetailLoading.value = false
   }
 }
 
