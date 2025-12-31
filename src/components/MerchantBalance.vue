@@ -6,7 +6,8 @@
         <span class="icon-circle">💰</span>
         <h3>Saldo Tersedia</h3>
       </div>
-      <h2 class="amount">{{ formatCurrency(qrisBalance) }}</h2>
+      <div v-if="isLoading" class="skeleton skeleton-amount"></div>
+      <h2 v-else class="amount">{{ formatCurrency(qrisBalance) }}</h2>
       <button class="action-btn">Tarik Dana</button>
       <p class="update-info">Terakhir diupdate: {{ lastUpdated }}</p>
     </div>
@@ -18,9 +19,14 @@
         <div class="stat-icon">📈</div>
         <div class="stat-content">
           <p class="stat-label">Omzet Hari Ini</p>
-          <p class="stat-value">{{ formatCurrency(balanceData?.totalBalance || 0) }}</p>
+          <div v-if="isLoading" class="skeleton skeleton-stat"></div>
+          <p v-else class="stat-value">{{ formatCurrency(balanceData?.totalBalance || 0) }}</p>
           
-          <div v-if="balanceData?.balanceGroup?.length" class="balance-breakdown">
+          <div v-if="isLoading" class="balance-breakdown">
+            <div class="skeleton skeleton-breakdown"></div>
+            <div class="skeleton skeleton-breakdown"></div>
+          </div>
+          <div v-else-if="balanceData?.balanceGroup?.length" class="balance-breakdown">
             <div v-for="item in balanceData.balanceGroup" :key="item.paymentMethod" class="breakdown-item">
               <span class="method-label">{{ item.paymentMethod.toUpperCase() }}</span>
               <span class="method-value">{{ formatCurrency(item.totalBalance) }}</span>
@@ -34,7 +40,8 @@
         <div class="stat-icon">✨</div>
         <div class="stat-content">
           <p class="stat-label">Komisi Hari Ini</p>
-          <p class="stat-value text-muted italic">Under Maintenance</p>
+          <div v-if="isLoading" class="skeleton skeleton-stat"></div>
+          <p v-else class="stat-value text-muted italic">Under Maintenance</p>
         </div>
       </div>
     </div>
@@ -53,6 +60,7 @@ import { transactionApi } from '@/utils/api'
 
 // Mock Data
 const balanceData = ref(null)
+const isLoading = ref(true)
 
 const qrisBalance = computed(() => {
   if (!balanceData.value || !balanceData.value.balanceGroup) return 0
@@ -77,6 +85,7 @@ const formatCurrency = (value) => {
 }
 
 const fetchBalance = async () => {
+  isLoading.value = true
   try {
     const response = await transactionApi.get('/sales/balance')
     if (response && response.data) {
@@ -88,6 +97,8 @@ const fetchBalance = async () => {
     }
   } catch (error) {
     console.error('Failed to fetch balance:', error)
+  } finally {
+    isLoading.value = false
   }
 }
 
@@ -287,6 +298,58 @@ defineEmits(['viewHistory'])
 
 .activity-hint a:hover {
   text-decoration: underline;
+}
+
+/* Skeleton Loading Animation */
+.skeleton {
+  background: #edf2f7;
+  background: linear-gradient(
+    90deg,
+    #edf2f7 25%,
+    #f7fafc 50%,
+    #edf2f7 75%
+  );
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  border-radius: 4px;
+}
+
+.main-balance-card .skeleton {
+  background: rgba(255, 255, 255, 0.1);
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.1) 25%,
+    rgba(255, 255, 255, 0.2) 50%,
+    rgba(255, 255, 255, 0.1) 75%
+  );
+  background-size: 200% 100%;
+}
+
+.skeleton-amount {
+  height: 48px;
+  width: 200px;
+  margin: 10px auto 24px;
+}
+
+.skeleton-stat {
+  height: 24px;
+  width: 120px;
+  margin-bottom: 4px;
+}
+
+.skeleton-breakdown {
+  height: 16px;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 @media (max-width: 480px) {
