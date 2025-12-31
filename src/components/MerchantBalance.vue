@@ -18,7 +18,14 @@
         <div class="stat-icon">📈</div>
         <div class="stat-content">
           <p class="stat-label">Omzet Hari Ini</p>
-          <p class="stat-value">{{ formatCurrency(todayRevenue) }}</p>
+          <p class="stat-value">{{ formatCurrency(balanceData?.totalBalance || 0) }}</p>
+          
+          <div v-if="balanceData?.balanceGroup?.length" class="balance-breakdown">
+            <div v-for="item in balanceData.balanceGroup" :key="item.paymentMethod" class="breakdown-item">
+              <span class="method-label">{{ item.paymentMethod.toUpperCase() }}</span>
+              <span class="method-value">{{ formatCurrency(item.totalBalance) }}</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -41,25 +48,46 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { transactionApi } from '@/utils/api'
 
 // Mock Data
 const balance = ref(2500000)
-const todayRevenue = ref(1500000)
-const todayCommission = ref(500000)
+const balanceData = ref(null)
+const todayCommission = ref(50000) // Keep as reactive ref if needed elsewhere, although template now has hardcoded "Under Maintenance"
 
-const lastUpdated = new Date().toLocaleTimeString('id-ID', { 
+const lastUpdated = ref(new Date().toLocaleTimeString('id-ID', { 
   hour: '2-digit', 
   minute: '2-digit' 
-})
+}))
 
 const formatCurrency = (value) => {
+  if (value === undefined || value === null) return 'Rp 0'
   return new Intl.NumberFormat('id-ID', {
     style: 'currency',
     currency: 'IDR',
     minimumFractionDigits: 0
   }).format(value)
 }
+
+const fetchBalance = async () => {
+  try {
+    const response = await transactionApi.get('/sales/balance')
+    if (response && response.data) {
+      balanceData.value = response.data
+      lastUpdated.value = new Date().toLocaleTimeString('id-ID', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      })
+    }
+  } catch (error) {
+    console.error('Failed to fetch balance:', error)
+  }
+}
+
+onMounted(() => {
+  fetchBalance()
+})
 
 defineEmits(['viewHistory'])
 </script>
@@ -203,6 +231,30 @@ defineEmits(['viewHistory'])
   font-size: 1.2em;
   font-weight: 700;
   color: #2d3748;
+}
+
+.balance-breakdown {
+  margin-top: 12px;
+  width: 100%;
+  border-top: 1px dashed #e2e8f0;
+  padding-top: 8px;
+}
+
+.breakdown-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75em;
+  margin-bottom: 4px;
+  color: #4a5568;
+}
+
+.method-label {
+  font-weight: 600;
+  opacity: 0.8;
+}
+
+.method-value {
+  font-weight: 500;
 }
 
 .text-muted {
