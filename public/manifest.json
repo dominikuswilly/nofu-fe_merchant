@@ -1,7 +1,7 @@
 {
-    "name": "Nofu Merchant Portal",
-    "short_name": "Nofu Merchant",
-    "description": "Portal for Nofu Merchants",
+    "name": "Merchant Portal",
+    "short_name": "Merchant",
+    "description": "Portal for Merchants",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#ffffff",
