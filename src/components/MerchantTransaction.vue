@@ -404,11 +404,11 @@ const finishTransaction = async () => {
   }
 }
 
-const cancelTransaction = () => {
-  showQR.value = false
-  cart.value = {}
-  alert('Transaksi sudah dibatalkan')
-}
+// const cancelTransaction = () => {
+//   showQR.value = false
+//   cart.value = {}
+//   alert('Transaksi sudah dibatalkan')
+// }
 
 onMounted(() => {
   fetchProducts()
