@@ -263,3 +263,9 @@ onMounted(() => {
   background-color: #5a67d8;
 }
 </style>
+
+<style>
+body {
+  margin: 0;
+}
+</style>
