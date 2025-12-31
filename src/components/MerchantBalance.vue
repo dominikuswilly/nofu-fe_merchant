@@ -27,7 +27,7 @@
         <div class="stat-icon">✨</div>
         <div class="stat-content">
           <p class="stat-label">Komisi Hari Ini</p>
-          <p class="stat-value">{{ formatCurrency(todayCommission) }}</p>
+          <p class="stat-value text-muted italic">Under Maintenance</p>
         </div>
       </div>
     </div>
@@ -37,9 +37,6 @@
       <p>Lihat <a href="#" @click.prevent="$emit('viewHistory')">Riwayat Transaksi</a> untuk detail lengkap.</p>
     </div>
 
-    <div class="activity-hint">
-      <p>DUMMY DATA</p>
-    </div>
   </div>
 </template>
 
@@ -206,6 +203,15 @@ defineEmits(['viewHistory'])
   font-size: 1.2em;
   font-weight: 700;
   color: #2d3748;
+}
+
+.text-muted {
+  color: #a0aec0 !important;
+}
+
+.italic {
+  font-style: italic;
+  font-size: 0.9em;
 }
 
 .activity-hint {
