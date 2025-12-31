@@ -82,7 +82,7 @@ const expandedIds = ref(new Set())
 
 const filters = [
   { label: 'Hari Ini', value: 'today' },
-  { label: 'Minggu Ini', value: 'week' },
+  { label: '7 Hari Terakhir', value: 'week' },
   { label: 'Bulan Ini', value: 'month' }
 ]
 
