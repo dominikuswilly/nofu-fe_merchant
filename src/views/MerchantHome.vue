@@ -1,5 +1,9 @@
 <template>
   <div class="merchant-home">
+    <div class="landscape-warning">
+      <h3>🔄 Sila Putar Peranti Anda</h3>
+      <p>Aplikasi ini hanya boleh digunakan dalam mod potret.</p>
+    </div>
     <MerchantHeader 
       @logout="handleLogout" 
       @checkIn="handleCheckIn" 
@@ -267,5 +271,29 @@ onMounted(() => {
 <style>
 body {
   margin: 0;
+}
+
+/* Orientation Lock Message */
+.landscape-warning {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #2d3748;
+  color: white;
+  z-index: 9999;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 20px;
+}
+
+@media screen and (max-height: 500px) and (orientation: landscape) {
+  .landscape-warning {
+    display: flex;
+  }
 }
 </style>
