@@ -85,8 +85,52 @@
           </div>
           <div class="card-actions">
             <button class="btn-detail">Lihat Detail</button>
-            <button class="btn-history">Riwayat</button>
+            <button class="btn-history" @click="fetchHistory(request)">Riwayat</button>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- History Modal -->
+    <div v-if="showHistoryModal" class="modal-overlay" @click.self="showHistoryModal = false">
+      <div class="modal-content history-modal">
+        <div class="modal-header">
+          <h3>Riwayat Status</h3>
+          <button class="close-btn" @click="showHistoryModal = false">✕</button>
+        </div>
+        
+        <div v-if="isHistoryLoading" class="modal-loader">
+          <div class="spinner"></div>
+          <p>Memuat riwayat...</p>
+        </div>
+        
+        <div v-else-if="historyData.length === 0" class="empty-history">
+          Tidak ada data riwayat
+        </div>
+        
+        <div v-else class="history-table-container">
+          <table class="history-table">
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>Status</th>
+                <th>Waktu</th>
+                <th>Oleh</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="row in historyData" :key="row.id">
+                <td>{{ row.seq }}</td>
+                <td>
+                  <span class="status-badge" :class="row.status.toLowerCase()">
+                    {{ row.status }}
+                  </span>
+                </td>
+                <td>{{ row.createdAt }}</td>
+                <td>{{ row.createdBy }}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -111,6 +155,11 @@ const form = ref({
 
 const cart = ref([])
 const restockRequests = ref([])
+
+// History Modal State
+const showHistoryModal = ref(false)
+const historyData = ref([])
+const isHistoryLoading = ref(false)
 
 const fetchProducts = async () => {
   isLoading.value = true
@@ -147,6 +196,7 @@ const fetchRestockList = async () => {
     if (Array.isArray(list)) {
       restockRequests.value = list.map(item => ({
         id: item.id || item.transactionId || Math.random().toString(),
+        productId: item.productId || item.product?.id,
         productName: item.productName || item.product?.name || 'Produk',
         quantity: item.qty || item.quantity || 0,
         status: item.status || 'pending',
@@ -246,6 +296,39 @@ const submitCart = async () => {
     alert('Gagal mengirim permintaan restock. Silakan coba lagi.')
   } finally {
     isLoading.value = false
+  }
+}
+
+const fetchHistory = async (request) => {
+  isHistoryLoading.value = true
+  showHistoryModal.value = true
+  historyData.value = []
+  
+  try {
+    // The history endpoint needs the items array. 
+    // If not available in the request object, we use the product info we have
+    const items = request.item || [
+      {
+        productId: request.productId || 'string',
+        qty: request.quantity || 1
+      }
+    ]
+
+    const payload = {
+      item: items
+    }
+
+    const response = await transactionApi.post(`/restock/${request.id}/history`, payload)
+    
+    if (response && response.responseCode === "200") {
+      historyData.value = response.data || []
+    } else {
+      console.warn('History API responded with non-200 code:', response)
+    }
+  } catch (err) {
+    console.error('Failed to fetch history:', err)
+  } finally {
+    isHistoryLoading.value = false
   }
 }
 
@@ -615,5 +698,124 @@ const formatDate = (dateString) => {
   .detail-row .label {
     min-width: 70px;
   }
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+}
+
+.modal-content {
+  background: white;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #edf2f7;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #2d3748;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: #a0aec0;
+  cursor: pointer;
+}
+
+.modal-loader {
+  padding: 40px;
+  text-align: center;
+  color: #718096;
+}
+
+.spinner {
+  width: 30px;
+  height: 30px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #4a90e2;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 12px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.history-table-container {
+  overflow-x: auto;
+  padding: 20px;
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.history-table th {
+  text-align: left;
+  padding: 12px;
+  background: #f8fafc;
+  color: #64748b;
+  font-weight: 600;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.history-table td {
+  padding: 12px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #334155;
+}
+
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.status-badge.pending { background: #fef3c7; color: #92400e; }
+.status-badge.approved { background: #dcfce7; color: #166534; }
+.status-badge.rejected { background: #fee2e2; color: #991b1b; }
+
+.empty-history {
+  padding: 40px;
+  text-align: center;
+  color: #a0aec0;
 }
 </style>
