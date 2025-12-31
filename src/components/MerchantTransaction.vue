@@ -104,9 +104,53 @@
         </div>
         <p class="qr-amount">Total: {{ formatCurrency(totalPrice) }}</p>
         <div class="action-buttons">
-          <button class="confirm-btn cancel" @click="cancelTransaction">Batalkan</button>
+          <button class="confirm-btn cancel" @click="showQR = false">Batalkan</button>
           <button class="confirm-btn success" @click="finishTransaction" :disabled="submitting">
             {{ submitting ? 'Menyimpan...' : 'Selesai' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payment Method Selection Modal -->
+    <div v-if="showPaymentMethod" class="modal-overlay">
+      <div class="modal-content">
+        <h3>Pilih Metode Pembayaran</h3>
+        <p class="text-center text-muted mb-4">Total: {{ formatCurrency(totalPrice) }}</p>
+        <div class="payment-options">
+          <button class="payment-option-btn qris" @click="selectQRIS">
+            <span class="option-icon">📱</span>
+            <div class="option-info">
+              <span class="option-title">QRIS</span>
+              <span class="option-desc">Scan kode QR untuk membayar</span>
+            </div>
+          </button>
+          <button class="payment-option-btn cash" @click="selectCash">
+            <span class="option-icon">💵</span>
+            <div class="option-info">
+              <span class="option-title">Tunai</span>
+              <span class="option-desc">Bayar langsung dengan uang tunai</span>
+            </div>
+          </button>
+        </div>
+        <div class="action-buttons mt-4">
+          <button class="cancel-btn" @click="showPaymentMethod = false">Batal</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cash Confirmation Modal -->
+    <div v-if="showCashConfirm" class="modal-overlay">
+      <div class="modal-content confirmation-modal">
+        <div class="warning-icon success">💵</div>
+        <h3>Konfirmasi Pembayaran</h3>
+        <p class="confirmation-message">
+          Apakah Anda sudah menerima uang tunai sebesar <strong>{{ formatCurrency(totalPrice) }}</strong> dari pelanggan?
+        </p>
+        <div class="confirmation-actions">
+          <button class="cancel-btn" @click="showCashConfirm = false">Belum</button>
+          <button class="confirm-btn success" @click="confirmCashPayment" :disabled="submitting">
+            {{ submitting ? 'Menyimpan...' : 'Sudah, Terima Kasih' }}
           </button>
         </div>
       </div>
@@ -225,6 +269,8 @@ const getRandomColor = () => {
 const cart = ref({})
 const showSummary = ref(false)
 const showQR = ref(false)
+const showPaymentMethod = ref(false)
+const showCashConfirm = ref(false)
 const showCancelConfirm = ref(false)
 const summaryRef = ref(null)
 
@@ -300,7 +346,21 @@ const cancelCheckout = () => {
 
 const proceedToPayment = () => {
   showSummary.value = false
+  showPaymentMethod.value = true
+}
+
+const selectQRIS = () => {
+  showPaymentMethod.value = false
   showQR.value = true
+}
+
+const selectCash = () => {
+  showPaymentMethod.value = false
+  showCashConfirm.value = true
+}
+
+const confirmCashPayment = () => {
+  finishTransaction()
 }
 
 const finishTransaction = async () => {
@@ -326,6 +386,7 @@ const finishTransaction = async () => {
     // 2xx response (api.js throws if not ok, but let's check response code if present)
     if (response) {
       showQR.value = false
+      showCashConfirm.value = false
       cart.value = {}
       alert('Transaksi sudah disimpan')
       await fetchProducts()
@@ -798,6 +859,63 @@ onMounted(() => {
 .product-card:active {
   transform: scale(0.98);
 }
+
+/* Payment Selection Styles */
+.payment-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.payment-option-btn {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.payment-option-btn:hover {
+  border-color: #667eea;
+  background-color: #f7fafc;
+}
+
+.option-icon {
+  font-size: 2em;
+}
+
+.option-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.option-title {
+  font-weight: 700;
+  color: #2d3748;
+  font-size: 1.1em;
+}
+
+.option-desc {
+  font-size: 0.85em;
+  color: #718096;
+}
+
+.warning-icon.success {
+  background-color: #f0fdf4;
+  color: #48bb78;
+}
+
+.text-muted {
+  color: #718096;
+}
+
+.mb-4 { margin-bottom: 1rem; }
+.mt-4 { margin-top: 1rem; }
 
 .product-image-placeholder {
   height: 120px;
