@@ -54,7 +54,6 @@ import { transactionApi } from '@/utils/api'
 // Mock Data
 const balance = ref(2500000)
 const balanceData = ref(null)
-const todayCommission = ref(50000) // Keep as reactive ref if needed elsewhere, although template now has hardcoded "Under Maintenance"
 
 const lastUpdated = ref(new Date().toLocaleTimeString('id-ID', { 
   hour: '2-digit', 
