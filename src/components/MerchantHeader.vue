@@ -8,7 +8,7 @@
           <div v-if="showMenu" class="dropdown-menu">
             <div class="profile-info">
               <p class="name">{{ merchant.name || "Merchant" }}</p>
-              <p class="email">{{ merchant.email || "email@example.com" }}</p>
+              <!-- <p class="email">{{ merchant.email || "email@example.com" }}</p> -->
               <p class="username">@{{ merchant.username || "username" }}</p>
             </div>
             <div class="divider"></div>
@@ -32,6 +32,7 @@
 
 <script setup>
 import { ref, defineProps, defineEmits, onMounted } from "vue";
+import { getToken, decodeToken } from "@/utils/auth";
 
 defineProps({
   isCheckingIn: Boolean
@@ -40,7 +41,11 @@ defineProps({
 defineEmits(["logout", "checkIn", "toTransaction"]);
 
 const showMenu = ref(false);
-const merchant = ref({});
+const merchant = ref({
+  name: "",
+  username: "",
+  email: ""
+});
 
 const toggleMenu = () => {
   showMenu.value = !showMenu.value;
@@ -48,12 +53,19 @@ const toggleMenu = () => {
 
 onMounted(() => {
   try {
-    const storedMerchant = localStorage.getItem("merchant");
-    if (storedMerchant) {
-      merchant.value = JSON.parse(storedMerchant);
+    const token = getToken();
+    if (token) {
+      const claims = decodeToken(token);
+      if (claims) {
+        merchant.value = {
+          name: claims.sub || "Merchant",
+          username: claims.username || "username",
+          email: claims.email || ""
+        };
+      }
     }
   } catch (e) {
-    console.error("Failed to parse merchant data", e);
+    console.error("Failed to parse merchant data from token", e);
   }
 });
 </script>
