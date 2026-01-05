@@ -8,7 +8,7 @@
           <input
             id="username"
             v-model="form.username"
-            type="email"
+            type="text"
             placeholder="Masukkan username"
             required
             autocomplete="username"
