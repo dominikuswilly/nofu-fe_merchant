@@ -465,7 +465,7 @@ const handleApproveStock = async () => {
   if (!stockMasterId.value) return
   submitting.value = true
   try {
-    await transactionApi.post(`/stock/${stockMasterId.value}?action=approve`)
+    await transactionApi.patch(`/stock/${stockMasterId.value}?action=approve`)
     alert('Stok berhasil dikonfirmasi')
     await fetchProducts()
   } catch (err) {
@@ -483,7 +483,7 @@ const handleRejectStock = async () => {
   
   submitting.value = true
   try {
-    await transactionApi.post(`/stock/${stockMasterId.value}?action=reject`)
+    await transactionApi.patch(`/stock/${stockMasterId.value}?action=reject`)
     alert('Stok telah ditolak')
     await fetchProducts()
   } catch (err) {
