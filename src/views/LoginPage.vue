@@ -173,9 +173,10 @@ const handleLogin = async () => {
       const errorMsg = responseData.responseMessage || 'Login gagal'
       triggerToast(errorMsg, 'error')
     }
-  } catch (error) {
-    console.error('Error saat login:', error)
-    triggerToast('Kesalahan jaringan: Tidak bisa terhubung ke server.', 'error')
+  } catch (err) {
+    console.error('Error saat login:', err)
+    const errorMsg = err.message || 'Kesalahan jaringan: Tidak bisa terhubung ke server.'
+    triggerToast(errorMsg, 'error')
   } finally {
     // Hentikan loading
     loading.value = false

@@ -60,9 +60,14 @@ export const apiRequest = async (
 
     // Handle unauthorized
     if (response.status === 401) {
-      clearAuth()
-      window.location.href = '/login'
-      throw new Error('Unauthorized - redirecting to login')
+      // Don't redirect if we're on the login page or making a login request
+      if (window.location.pathname === '/login' || url.includes('/login')) {
+        // Fall through to error extraction below
+      } else {
+        clearAuth()
+        window.location.href = '/login'
+        throw new Error('Unauthorized - redirecting to login')
+      }
     }
 
     const contentType = response.headers.get('content-type') || ''
@@ -75,8 +80,8 @@ export const apiRequest = async (
         try {
           const errorData = await response.json()
           message =
-            errorData.message ||
             errorData.responseMessage ||
+            errorData.message ||
             message
         } catch {
           // ignore JSON parse error, keep default message
