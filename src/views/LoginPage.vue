@@ -172,11 +172,17 @@ const handleLogin = async () => {
       // Response OK but not successful
       const errorMsg = responseData.responseMessage || 'Login gagal'
       triggerToast(errorMsg, 'error')
+      
+      // Delay briefly so user can read the error
+      await new Promise(resolve => setTimeout(resolve, 2000))
     }
   } catch (err) {
     console.error('Error saat login:', err)
     const errorMsg = err.message || 'Kesalahan jaringan: Tidak bisa terhubung ke server.'
     triggerToast(errorMsg, 'error')
+    
+    // Delay briefly so user can read the error
+    await new Promise(resolve => setTimeout(resolve, 2000))
   } finally {
     // Hentikan loading
     loading.value = false
