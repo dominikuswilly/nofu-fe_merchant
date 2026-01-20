@@ -10,6 +10,42 @@
       <button @click="fetchProducts" class="retry-btn">Coba Lagi</button>
     </div>
 
+    <div v-else-if="needsApproval" class="approval-view">
+      <div class="approval-card">
+        <div class="approval-header">
+          <div class="warning-icon">📦</div>
+          <h3>Konfirmasi Stok Barang</h3>
+          <p class="subtitle">Silakan periksa dan konfirmasi stok barang yang baru saja diterima.</p>
+        </div>
+
+        <div class="stock-recap">
+          <table class="recap-table">
+            <thead>
+              <tr>
+                <th>Produk</th>
+                <th>Jumlah</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="item in approvalStockDetail" :key="item.id">
+                <td>{{ item.productName }}</td>
+                <td class="qty-cell">{{ item.qty }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="approval-actions">
+          <button class="reject-btn" @click="handleRejectStock" :disabled="submitting">
+            {{ submitting ? 'Memproses...' : 'Tolak' }}
+          </button>
+          <button class="approve-btn" @click="handleApproveStock" :disabled="submitting">
+            {{ submitting ? 'Memproses...' : 'Konfirmasi' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
     <div v-else-if="products.length === 0" class="state-message">
       <p>Tidak ada produk yang tersedia.</p>
     </div>
@@ -185,6 +221,10 @@ const loading = ref(false)
 const submitting = ref(false)
 const error = ref(null)
 
+const needsApproval = ref(false)
+const approvalStockDetail = ref([])
+const stockMasterId = ref(null)
+
 const onImageError = (product) => {
   console.error('MerchantTransaction: Image load error:', product.name, 'URL:', product.image)
 }
@@ -207,6 +247,17 @@ const fetchProducts = async () => {
     const response = await transactionApi.get(`/stock?merchant_id=${merchantId}`)
     
     console.log('Transaction API Response:', response)
+    
+    // Check for "waiting approval from merchant" status
+    if (response.data.status === "waiting approval from merchant") {
+      needsApproval.value = true
+      approvalStockDetail.value = response.data?.stockDetail || []
+      stockMasterId.value = response.data?.id // Assuming response.data.id contains stock_master_id
+      loading.value = false
+      return
+    }
+
+    needsApproval.value = false
     
     // Handle response based on the API structure
     if (response.responseCode === "200" || response.status === "success" || Array.isArray(response.data)) {
@@ -409,6 +460,39 @@ const finishTransaction = async (paymentMethod) => {
 onMounted(() => {
   fetchProducts()
 })
+
+const handleApproveStock = async () => {
+  if (!stockMasterId.value) return
+  submitting.value = true
+  try {
+    await transactionApi.patch(`/stock/${stockMasterId.value}?action=approve`)
+    alert('Stok berhasil dikonfirmasi')
+    await fetchProducts()
+  } catch (err) {
+    console.error('Error approving stock:', err)
+    alert(`Gagal mengkonfirmasi stok: ${err.message}`)
+  } finally {
+    submitting.value = false
+  }
+}
+
+const handleRejectStock = async () => {
+  if (!stockMasterId.value) return
+  const confirmed = confirm('Apakah Anda yakin ingin menolak stok ini?')
+  if (!confirmed) return
+  
+  submitting.value = true
+  try {
+    await transactionApi.patch(`/stock/${stockMasterId.value}?action=reject`)
+    alert('Stok telah ditolak')
+    await fetchProducts()
+  } catch (err) {
+    console.error('Error rejecting stock:', err)
+    alert(`Gagal menolak stok: ${err.message}`)
+  } finally {
+    submitting.value = false
+  }
+}
 </script>
 
 <style scoped>
@@ -464,6 +548,126 @@ onMounted(() => {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+/* Approval View Styles */
+.approval-view {
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+.approval-card {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 500px;
+  padding: 32px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.approval-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.approval-header .warning-icon {
+  font-size: 3em;
+  margin-bottom: 12px;
+}
+
+.approval-header h3 {
+  margin: 0;
+  color: #2d3748;
+  font-size: 1.5em;
+}
+
+.approval-header .subtitle {
+  color: #718096;
+  margin-top: 8px;
+}
+
+.stock-recap {
+  margin-bottom: 32px;
+  border: 1px solid #edf2f7;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.recap-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.recap-table th {
+  background: #f7fafc;
+  text-align: left;
+  padding: 12px 16px;
+  color: #4a5568;
+  font-weight: 600;
+  border-bottom: 1px solid #edf2f7;
+}
+
+.recap-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #edf2f7;
+  color: #2d3748;
+}
+
+.recap-table tr:last-child td {
+  border-bottom: none;
+}
+
+.qty-cell {
+  text-align: right;
+  font-weight: 700;
+  color: #667eea;
+}
+
+.approval-actions {
+  display: flex;
+  gap: 16px;
+}
+
+.approve-btn, .reject-btn {
+  flex: 1;
+  padding: 14px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1em;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.approve-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.approve-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+
+.reject-btn {
+  background: white;
+  color: #e53e3e;
+  border: 2px solid #fed7d7;
+}
+
+.reject-btn:hover:not(:disabled) {
+  background: #fff5f5;
+  border-color: #feb2b2;
+}
+
+.approve-btn:disabled, .reject-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 
 /* Locked Overlay Styles */

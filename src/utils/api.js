@@ -135,6 +135,7 @@ export const createService = (baseUrl) => {
     get: (endpoint, options) => request('GET', endpoint, null, options),
     post: (endpoint, data, options) => request('POST', endpoint, data, options),
     put: (endpoint, data, options) => request('PUT', endpoint, data, options),
+    patch: (endpoint, data, options) => request('PATCH', endpoint, data, options),
     del: (endpoint, options) => request('DELETE', endpoint, null, options),
   }
 }
@@ -161,6 +162,13 @@ export const put = (endpoint, data, options = {}) =>
   apiRequest(endpoint, {
     ...options,
     method: 'PUT',
+    body: JSON.stringify(data),
+  })
+
+export const patch = (endpoint, data, options = {}) =>
+  apiRequest(endpoint, {
+    ...options,
+    method: 'PATCH',
     body: JSON.stringify(data),
   })
 
