@@ -60,9 +60,13 @@ export const apiRequest = async (
 
     // Handle unauthorized
     if (response.status === 401) {
-      clearAuth()
-      window.location.href = '/login'
-      throw new Error('Unauthorized - redirecting to login')
+      if (window.location.pathname === '/login' || url.includes('/login')) {
+        // Fall through to error extraction below
+      } else {
+        clearAuth()
+        window.location.href = '/login'
+        throw new Error('Unauthorized - redirecting to login')
+      }
     }
 
     const contentType = response.headers.get('content-type') || ''
