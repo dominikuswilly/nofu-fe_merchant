@@ -267,12 +267,17 @@ const addToCart = () => {
   const product = products.value.find(p => p.id === form.value.productId)
   if (!product) return
 
-  cart.value.push({
-    productId: product.id,
-    productName: product.name,
-    quantity: form.value.quantity,
-
-  })
+  const existingItem = cart.value.find(item => item.productId === product.id)
+  
+  if (existingItem) {
+    existingItem.quantity += form.value.quantity
+  } else {
+    cart.value.push({
+      productId: product.id,
+      productName: product.name,
+      quantity: form.value.quantity,
+    })
+  }
 
   // Reset form partialy
   form.value.productId = ''
