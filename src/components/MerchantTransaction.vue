@@ -249,10 +249,11 @@ const fetchProducts = async () => {
     console.log('Transaction API Response:', response)
     
     // Check for "waiting approval from merchant" status
-    if (response.data.status === "waiting approval from merchant") {
+    const resultStatus = response?.data?.status || response?.status;
+    if (resultStatus === "waiting approval from merchant") {
       needsApproval.value = true
-      approvalStockDetail.value = response.data?.stockDetail || []
-      stockMasterId.value = response.data?.id // Assuming response.data.id contains stock_master_id
+      approvalStockDetail.value = response?.data?.stockDetail || response?.stockDetail || []
+      stockMasterId.value = response?.data?.id || response?.id 
       loading.value = false
       return
     }
